@@ -1,12 +1,7 @@
 package com.airbnb.android.react.maps;
 
 import android.view.View;
-
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.*;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.LayoutShadowNode;
@@ -20,10 +15,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 public class AirMapManager extends ViewGroupManager<AirMapView> {
 
@@ -62,6 +56,12 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     this.appContext = context;
     this.googleMapOptions = new GoogleMapOptions();
   }
+
+    public AirMapManager(ReactApplicationContext context, GoogleMapOptions googleMapOptions) {
+        this.appContext = context;
+        this.googleMapOptions = googleMapOptions;
+    }
+
 
   public AirMapMarkerManager getMarkerManager() {
     return this.markerManager;

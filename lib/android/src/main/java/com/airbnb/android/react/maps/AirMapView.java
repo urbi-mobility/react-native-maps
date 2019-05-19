@@ -8,7 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
-import android.location.LocationManager;
+import android.location.Location;
 import android.os.Build;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.MotionEventCompat;
@@ -19,57 +19,24 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.location.Location;
-
-import com.facebook.react.bridge.LifecycleEventListener;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableNativeArray;
-import com.facebook.react.bridge.WritableNativeMap;
-import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.*;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.EventDispatcher;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMapOptions;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.Projection;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PointOfInterest;
-import com.google.android.gms.maps.model.Polygon;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.IndoorBuilding;
-import com.google.android.gms.maps.model.IndoorLevel;
+import com.google.android.gms.maps.*;
+import com.google.android.gms.maps.model.*;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.data.kml.KmlContainer;
 import com.google.maps.android.data.kml.KmlLayer;
 import com.google.maps.android.data.kml.KmlPlacemark;
 import com.google.maps.android.data.kml.KmlStyle;
-
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static android.support.v4.content.PermissionChecker.checkSelfPermission;
@@ -123,13 +90,13 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private final Map<Marker, AirMapMarker> markerMap = new HashMap<>();
   private final Map<Polyline, AirMapPolyline> polylineMap = new HashMap<>();
   private final Map<Polygon, AirMapPolygon> polygonMap = new HashMap<>();
-  private final GestureDetectorCompat gestureDetector;
-  private final AirMapManager manager;
+  private GestureDetectorCompat gestureDetector;
+  private AirMapManager manager;
   private LifecycleEventListener lifecycleListener;
   private boolean paused = false;
   private boolean destroyed = false;
   private final ThemedReactContext context;
-  private final EventDispatcher eventDispatcher;
+  private EventDispatcher eventDispatcher;
   private AirMapMarker selectedMarker;
 
   private ViewAttacherGroup attacherGroup;
@@ -165,6 +132,15 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     return superContext;
   }
 
+  public AirMapView(ThemedReactContext context) {
+    super(getNonBuggyContext(context, (ReactApplicationContext) context.getApplicationContext()), new GoogleMapOptions());
+
+    this.context = context;
+
+    super.onCreate(null);
+    initView();
+  }
+
   public AirMapView(ThemedReactContext reactContext, ReactApplicationContext appContext,
       AirMapManager manager,
       GoogleMapOptions googleMapOptions) {
@@ -172,39 +148,43 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
     this.manager = manager;
     this.context = reactContext;
+    initView();
 
-    fusedLocationClient = LocationServices.getFusedLocationProviderClient(appContext);
+  }
 
+  public void setExtra(AirMapManager manager) {
+    this.manager = manager;
+  }
+
+  private void initView() {
+    fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
     super.onCreate(null);
     // TODO(lmr): what about onStart????
     super.onResume();
     super.getMapAsync(this);
-
     final AirMapView view = this;
-
     gestureDetector =
-        new GestureDetectorCompat(reactContext, new GestureDetector.SimpleOnGestureListener() {
+            new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
 
-          @Override
-          public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
-              float distanceY) {
-            if (handlePanDrag) {
-              onPanDrag(e2);
-            }
-            return false;
-          }
-        });
-
+              @Override
+              public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                                      float distanceY) {
+                if (handlePanDrag) {
+                  onPanDrag(e2);
+                }
+                return false;
+              }
+            });
     this.addOnLayoutChangeListener(new OnLayoutChangeListener() {
       @Override public void onLayoutChange(View v, int left, int top, int right, int bottom,
-          int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                                           int oldLeft, int oldTop, int oldRight, int oldBottom) {
         if (!paused) {
           AirMapView.this.cacheView();
         }
       }
     });
 
-    eventDispatcher = reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher();
+    eventDispatcher = context.getNativeModule(UIManagerModule.class).getEventDispatcher();
 
     // Set up a parent view for triggering visibility in subviews that depend on it.
     // Mainly ReactImageView depends on Fresco which depends on onVisibilityChanged() event
