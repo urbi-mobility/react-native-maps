@@ -4,10 +4,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <com.airbnb.android.react.maps.AirMapView
-            android:id="@+id/airMap"
+    <!--<com.airbnb.android.react.maps.AirMapView-->
+    <!--android:id="@+id/airMap"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"/>-->
+
+    <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="20dp"
+            android:text="CONTENUTO"/>
 
     <include layout="@layout/linear"/>
 
