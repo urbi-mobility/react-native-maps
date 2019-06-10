@@ -1,10 +1,16 @@
 package com.airbnb.android.react.maps;
 
+import android.view.View;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
+import com.facebook.react.uimanager.events.RCTEventEmitter;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Map;
 
 public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
@@ -25,8 +31,22 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     @Nonnull
     @Override
     protected CoordAirMapView createViewInstance(@Nonnull ThemedReactContext reactContext) {
-        return new CoordAirMapView(reactContext);
+        return new CoordAirMapView(reactContext,this);
 
-//        return new CoordAirMapView(reactContext, new AirMapManager(this.appContext, new GoogleMapOptions().liteMode(true)));
+    }
+
+
+    @Override
+    @Nullable
+    public Map getExportedCustomDirectEventTypeConstants() {
+        Map<String, Map<String, String>> map = MapBuilder.of(
+                "clickHeader",MapBuilder.of("registrationName", "clickHeader")
+        );
+        return map;
+    }
+
+    void pushEvent(ThemedReactContext context, View view, String name, WritableMap data) {
+        context.getJSModule(RCTEventEmitter.class)
+                .receiveEvent(view.getId(), name, data);
     }
 }

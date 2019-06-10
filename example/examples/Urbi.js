@@ -70,6 +70,8 @@ class Urbi extends React.Component {
         this.onCityChange = this.onCityChange.bind(this);
         this.onCenterPress = this.onCenterPress.bind(this);
         this.onFilterPress = this.onFilterPress.bind(this);
+        this.clickHeader = this.clickHeader.bind(this);
+
     }
 
     onMapReady() {
@@ -95,6 +97,11 @@ class Urbi extends React.Component {
 
     onMapPress() {
         this.setState({selected: null});
+    }
+
+    clickHeader(e) {
+        console.log("DclickHeader")
+        alert(JSON.stringify(e))
     }
 
     onMarkerPress(key) {
@@ -131,8 +138,7 @@ class Urbi extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <CoordinatorView style={{flex: 1, width: '100%'}}>
-
+                <CoordinatorView style={{flex: 1, width: '100%'}} clickHeader={this.clickHeader}>
                     <MapView
                         ref={this.map}
                         provider={this.props.provider}
