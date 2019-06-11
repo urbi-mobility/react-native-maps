@@ -100,7 +100,6 @@ class Urbi extends React.Component {
     }
 
     clickHeader(e) {
-        console.log("DclickHeader")
         alert(JSON.stringify(e))
     }
 
@@ -138,7 +137,7 @@ class Urbi extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <CoordinatorView style={{flex: 1, width: '100%'}} clickHeader={this.clickHeader}>
+                <CoordinatorView style={styles.container} clickHeader={this.clickHeader}>
                     <MapView
                         ref={this.map}
                         provider={this.props.provider}

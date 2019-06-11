@@ -49,4 +49,9 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
         context.getJSModule(RCTEventEmitter.class)
                 .receiveEvent(view.getId(), name, data);
     }
+
+    @Override
+    public void addView(CoordAirMapView parent, View child, int index) {
+        super.addView(parent, child, index);
+    }
 }
