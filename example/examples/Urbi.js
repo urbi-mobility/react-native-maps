@@ -137,7 +137,7 @@ class Urbi extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <CoordinatorView style={styles.container} clickHeader={this.clickHeader}>
+                <CoordinatorView style={{flex:1,width:'100%'}} clickHeader={this.clickHeader}>
                     <MapView
                         ref={this.map}
                         provider={this.props.provider}
@@ -157,6 +157,11 @@ class Urbi extends React.Component {
                     >
                         {this.state.markers.map(this.generateMarker)}
                     </MapView>
+
+                    <View style={styles.childContainer}>
+                        <Text style={{backgroundColor:'red' , height:100 ,textAlign:'center'}}>TESTO 1</Text>
+                        <Text style={{backgroundColor:'blue',   height:100,textAlign:'center' }}>TESTO 2</Text>
+                    </View>
                 </CoordinatorView>
                 <View style={styles.locationButton}>
                     <TouchableHighlight style={styles.centerButton} onPress={this.onCenterPress}>
@@ -190,6 +195,13 @@ const styles = StyleSheet.create({
     },
     map: {
         ...StyleSheet.absoluteFillObject,
+    },
+    childContainer:{
+        flexDirection:'column',
+        flex:2,
+        flexWrap:'nowrap',
+        width: '100%',
+        backgroundColor: 'black',
     },
     bottomPanel: {
         backgroundColor: '#ffffff',
