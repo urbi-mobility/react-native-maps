@@ -1,5 +1,15 @@
 import React from 'react';
-import {Image, Platform, StyleSheet, Text, ToastAndroid, TouchableHighlight, UIManager, View,} from 'react-native';
+import {
+    FlatList,
+    Image,
+    Platform,
+    StyleSheet,
+    Text,
+    ToastAndroid,
+    TouchableHighlight,
+    UIManager,
+    View
+} from 'react-native';
 
 import MapView, {Marker, ProviderPropType} from 'react-native-maps';
 import berlinVehicleList from './assets/vehicles.json';
@@ -169,7 +179,30 @@ class Urbi extends React.Component {
 
                     <View style={styles.childContainer}>
                         <Text style={{backgroundColor:'red' , height:100 ,textAlign:'center'}}>TESTO 1</Text>
-                        <Text style={{backgroundColor:'blue',   height:100,textAlign:'center' }}>TESTO 2</Text>
+                        {/*<Text style={{backgroundColor:'blue',   height:100,textAlign:'center' }}>TESTO 2</Text>*/}
+                        <FlatList
+                            data={[
+                                {key: 'Devin'},
+                                {key: 'Jackson'},
+                                {key: 'James'},
+                                {key: 'Joel'},
+                                {key: 'John'},
+                                {key: 'Jillian'},
+                                {key: 'Jimmy'},
+                                {key: 'Julie'},
+                                {key: 'A'},
+                                {key: 'B'},
+                                {key: 'C'},
+                                {key: 'D'},
+                                {key: 'F'},
+                                {key: 'G'},
+                                {key: 'H'},
+                                {key: 'Dq'},
+                                {key: 'Dvv'},
+
+                            ]}
+                            renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}/>
+
                     </View>
                 </CoordinatorView>
                 <View style={styles.locationButton}>
@@ -242,6 +275,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         height: 200,
         alignSelf: 'stretch',
+    },
+    item: {
+        padding: 10,
+        fontSize: 18,
+        height: 44,
+        backgroundColor: 'blue',
+
     },
     locationButton: {
         position: 'absolute',
