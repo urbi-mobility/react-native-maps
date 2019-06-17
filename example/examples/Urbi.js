@@ -6,7 +6,7 @@ import berlinVehicleList from './assets/vehicles.json';
 import hamburgVehicleList from './assets/vehicles-hamburg.json';
 import cityList from './assets/cities.json';
 import pins, {cityIcons} from './UrbiImages';
-import CoordinatorView from "../../lib/components/CoordinatorView";
+import CoordinatorView, {BOTTOM_SHEET_TYPES} from "../../lib/components/CoordinatorView";
 
 const LATITUDE = 52.520873;
 const LONGITUDE = 13.409419;
@@ -59,7 +59,7 @@ class Urbi extends React.Component {
             selected: null,
             city: 'berlin',
         };
-
+        this.coordinator = React.createRef();
         this.map = React.createRef();
 
         this.onMapPress = this.onMapPress.bind(this);
@@ -71,6 +71,8 @@ class Urbi extends React.Component {
         this.onCenterPress = this.onCenterPress.bind(this);
         this.onFilterPress = this.onFilterPress.bind(this);
         this.clickHeader = this.clickHeader.bind(this);
+        this.onTest = this.onTest.bind(this);
+
 
     }
 
@@ -134,10 +136,17 @@ class Urbi extends React.Component {
         this.setState({markers: [...this.state.markers]});
     }
 
+    onTest(value) {
+        this.coordinator.current.setStatusExpandable(value)
+    }
+
     render() {
         return (
             <View style={styles.container}>
-                <CoordinatorView style={{flex:1,width:'100%'}} clickHeader={this.clickHeader}>
+                <CoordinatorView
+                    ref={this.coordinator}
+                    style={{flex: 1, width: '100%'}}
+                    clickHeader={this.clickHeader}>
                     <MapView
                         ref={this.map}
                         provider={this.props.provider}
@@ -173,6 +182,21 @@ class Urbi extends React.Component {
                         <Text style={styles.locationButtonText}>filter</Text>
                     </TouchableHighlight>
                 </View>
+                <View style={styles.thirthButton}>
+                    <View style={styles.childRowContainer}>
+                        <TouchableHighlight style={styles.centerButtonMargin} onPress={() => {
+                            this.onTest(BOTTOM_SHEET_TYPES.EXPAND)
+                        }}>
+                            <Text style={styles.locationButtonText}>EXPAND</Text>
+                        </TouchableHighlight>
+
+                        <TouchableHighlight style={styles.centerButtonMargin} onPress={() => {
+                            this.onTest(BOTTOM_SHEET_TYPES.COLLAPSED)
+                        }}>
+                            <Text style={styles.locationButtonText}>COLLAPSED</Text>
+                        </TouchableHighlight>
+                    </View>
+                </View>
                 {this.state.selected && (
                     <View style={styles.bottomPanel}>
                         <Text style={styles.text}>Selected: {this.state.selected}</Text>
@@ -203,6 +227,12 @@ const styles = StyleSheet.create({
         width: '100%',
         backgroundColor: 'black',
     },
+
+    childRowContainer: {
+        flexDirection: 'row',
+        flex: 1,
+        width: '100%',
+    },
     bottomPanel: {
         backgroundColor: '#ffffff',
         height: 200,
@@ -228,6 +258,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 10,
     },
+    thirthButton: {
+        position: 'absolute',
+        top: 120,
+        right: 0,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+    },
     locationButtonText: {
         fontSize: 10,
         color: '#ffffff',
@@ -236,6 +275,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#ec008b',
         padding: 10,
         borderRadius: 10,
+    },
+    centerButtonMargin: {
+        backgroundColor: '#ec008b',
+        padding: 10,
+        borderRadius: 10,
+        margin: 5
     },
     bubble: {
         backgroundColor: 'rgba(255,255,255,0.7)',
