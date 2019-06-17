@@ -1,18 +1,19 @@
 package com.airbnb.android.react.maps;
 
 import android.content.Context;
-import android.support.design.widget.BottomSheetBehavior;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
 public class CoordAirMapView extends android.support.design.widget.CoordinatorLayout {
     public CoordAirMapManager manager;
 
-    private BottomSheetBehavior<FrameLayout> mainBottomSheetBehavior;
+    private AnchorSheetBehavior<FrameLayout> mainBottomSheetBehavior;
     public CoordAirMapView(Context context, CoordAirMapManager coordAirMapManager) {
         super(context);
         this.manager = coordAirMapManager;
@@ -23,7 +24,8 @@ public class CoordAirMapView extends android.support.design.widget.CoordinatorLa
     private void init() {
         View view = View.inflate(getContext(), R.layout.coordinator, this);
         FrameLayout replaceSheet = view.findViewById(R.id.replaceSheet);
-        mainBottomSheetBehavior = BottomSheetBehavior.from(replaceSheet);
+        mainBottomSheetBehavior = AnchorSheetBehavior.from(replaceSheet);
+        mainBottomSheetBehavior.setAnchorOffset(0.25f);
     }
 
     public void setPeekHeightFirstView(final View view) {
@@ -33,6 +35,7 @@ public class CoordAirMapView extends android.support.design.widget.CoordinatorLa
                 if (view.getHeight() != 0) {
                     view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     mainBottomSheetBehavior.setPeekHeight(view.getHeight());
+
                 }
             }
         });

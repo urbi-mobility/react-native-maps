@@ -195,6 +195,11 @@ class Urbi extends React.Component {
                         }}>
                             <Text style={styles.locationButtonText}>COLLAPSED</Text>
                         </TouchableHighlight>
+                        <TouchableHighlight style={styles.centerButtonMargin} onPress={() => {
+                            this.onTest(BOTTOM_SHEET_TYPES.ANCHOR)
+                        }}>
+                            <Text style={styles.locationButtonText}>ANCHOR</Text>
+                        </TouchableHighlight>
                     </View>
                 </View>
                 {this.state.selected && (

@@ -1,8 +1,8 @@
 package com.airbnb.android.react.maps;
 
-import android.support.design.widget.BottomSheetBehavior;
 import android.view.View;
 import android.view.ViewGroup;
+
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
@@ -10,10 +10,12 @@ import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.hardsoftstudio.widget.AnchorSheetBehavior;
+
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Map;
 
 public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
@@ -24,6 +26,8 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     private final String EXPAND = "EXPAND";
     private final String COLLAPSED = "COLLAPSED";
     private final String HIDE = "HIDE";
+    private final String ANCHOR = "ANCHOR";
+
     public CoordAirMapManager(ReactApplicationContext context) {
         this.appContext = context;
 
@@ -64,13 +68,16 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
                 if (args != null && args.size() > 0) {
                     switch (args.getString(0)) {
                         case EXPAND:
-                            root.setStatusBottomSheet(BottomSheetBehavior.STATE_EXPANDED);
+                            root.setStatusBottomSheet(AnchorSheetBehavior.STATE_EXPANDED);
                             break;
                         case HIDE:
-                            root.setStatusBottomSheet(BottomSheetBehavior.STATE_HIDDEN);
+                            root.setStatusBottomSheet(AnchorSheetBehavior.STATE_HIDDEN);
                             break;
                         case COLLAPSED:
-                            root.setStatusBottomSheet(BottomSheetBehavior.STATE_COLLAPSED);
+                            root.setStatusBottomSheet(AnchorSheetBehavior.STATE_COLLAPSED);
+                            break;
+                        case ANCHOR:
+                            root.setStatusBottomSheet(AnchorSheetBehavior.STATE_ANCHOR);
                             break;
                     }
                 }
