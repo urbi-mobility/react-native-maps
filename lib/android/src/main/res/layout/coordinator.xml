@@ -5,6 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <FrameLayout
+        android:id="@+id/replaceMap"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 
     <FrameLayout
         android:id="@+id/replaceSheet"
@@ -12,5 +17,14 @@
         android:layout_height="wrap_content"
         app:behavior_peekHeight="80dp"
         app:layout_behavior="com.hardsoftstudio.widget.AnchorSheetBehavior" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingPoint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:src="@drawable/background_circle"
+        app:layout_anchor="@+id/replaceSheet"
+        app:layout_anchorGravity="top|end" />
 
 </android.support.design.widget.CoordinatorLayout>

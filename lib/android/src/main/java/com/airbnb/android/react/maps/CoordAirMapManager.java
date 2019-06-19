@@ -98,8 +98,12 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
      */
     @Override
     public void addView(CoordAirMapView parent, View child, int index) {
-        if (index == 0)
-            super.addView(parent, child, index);
+        if (index == 0) {
+            if (child instanceof AirMapView)
+                parent.setAirMapView((AirMapView) child);
+            ViewGroup view = parent.findViewById(R.id.replaceMap);
+            view.addView(child);
+        }
         else if (index == 1) {
             if (child instanceof ViewGroup)
                 parent.setPeekHeightFirstView(((ViewGroup) child).getChildAt(0));
