@@ -10,6 +10,7 @@ import {
     UIManager,
     View
 } from 'react-native';
+import NestedScrollView from 'react-native-nested-scroll-view'
 
 import MapView, {Marker, ProviderPropType} from 'react-native-maps';
 import berlinVehicleList from './assets/vehicles.json';
@@ -180,29 +181,30 @@ class Urbi extends React.Component {
                     <View style={styles.childContainer}>
                         <Text style={{backgroundColor:'red' , height:100 ,textAlign:'center'}}>TESTO 1</Text>
                         {/*<Text style={{backgroundColor:'blue',   height:100,textAlign:'center' }}>TESTO 2</Text>*/}
-                        <FlatList
-                            data={[
-                                {key: 'Devin'},
-                                {key: 'Jackson'},
-                                {key: 'James'},
-                                {key: 'Joel'},
-                                {key: 'John'},
-                                {key: 'Jillian'},
-                                {key: 'Jimmy'},
-                                {key: 'Julie'},
-                                {key: 'A'},
-                                {key: 'B'},
-                                {key: 'C'},
-                                {key: 'D'},
-                                {key: 'F'},
-                                {key: 'G'},
-                                {key: 'H'},
-                                {key: 'Dq'},
-                                {key: 'Dvv'},
+                        <NestedScrollView>
+                            <FlatList
+                                data={[
+                                    {key: 'Devin'},
+                                    {key: 'Jackson'},
+                                    {key: 'James'},
+                                    {key: 'Joel'},
+                                    {key: 'John'},
+                                    {key: 'Jillian'},
+                                    {key: 'Jimmy'},
+                                    {key: 'Julie'},
+                                    {key: 'A'},
+                                    {key: 'B'},
+                                    {key: 'C'},
+                                    {key: 'D'},
+                                    {key: 'F'},
+                                    {key: 'G'},
+                                    {key: 'H'},
+                                    {key: 'Dq'},
+                                    {key: 'Dvv'},
 
-                            ]}
-                            renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}/>
-
+                                ]}
+                                renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}/>
+                        </NestedScrollView>
                     </View>
                 </CoordinatorView>
                 <View style={styles.locationButton}>
