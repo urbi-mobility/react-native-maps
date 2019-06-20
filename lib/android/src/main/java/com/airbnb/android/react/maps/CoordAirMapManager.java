@@ -1,21 +1,21 @@
 package com.airbnb.android.react.maps;
 
+import android.support.design.widget.AppBarLayout;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
+import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
-import java.util.Map;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 
 public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
@@ -60,6 +60,11 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
                 .receiveEvent(view.getId(), name, data);
     }
 
+    @ReactProp(name = "peekHeight")
+    public void setPeekHeight(CoordAirMapView view, int peekHeight) {
+        view.setPeekHeightFirstView(peekHeight);
+    }
+
 
     @Override
     public void receiveCommand(@Nonnull CoordAirMapView root, int commandId, @Nullable ReadableArray args) {
@@ -98,19 +103,32 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
      */
     @Override
     public void addView(CoordAirMapView parent, View child, int index) {
-        if (index == 0) {
-            if (child instanceof AirMapView)
-                parent.setAirMapView((AirMapView) child);
-            ViewGroup view = parent.findViewById(R.id.replaceMap);
-            view.addView(child);
-        }
-        else if (index == 1) {
-            if (child instanceof ViewGroup)
-                parent.setPeekHeightFirstView(((ViewGroup) child).getChildAt(0));
-            else
-                parent.setPeekHeightFirstView(child);
-            ViewGroup view = parent.findViewById(R.id.replaceSheet);
-            view.addView(child);
+
+        switch (index) {
+            case 0: {
+                if (child instanceof AirMapView)
+                    parent.setAirMapView((AirMapView) child);
+                ViewGroup view = parent.findViewById(R.id.replaceMap);
+                view.addView(child);
+            }
+            break;
+            case 1: {
+//                if (child instanceof ViewGroup)
+//                    parent.setPeekHeightFirstView(((ViewGroup) child).getChildAt(0));
+//                else
+//                    parent.setPeekHeightFirstView(child);
+                ViewGroup view = parent.findViewById(R.id.replaceSheet);
+                view.addView(child);
+            }
+            break;
+            case 2: {
+                AppBarLayout view = parent.findViewById(R.id.mainAppbar);
+                view.setExpanded(false);
+                view.setLiftable(false);
+                view.addView(child, 0);
+                view.setVisibility(View.VISIBLE);
+            }
+            break;
         }
 
     }

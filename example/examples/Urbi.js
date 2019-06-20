@@ -157,6 +157,7 @@ class Urbi extends React.Component {
                 <CoordinatorView
                     ref={this.coordinator}
                     style={{flex: 1, width: '100%'}}
+                    peekHeight={300}
                     clickHeader={this.clickHeader}>
                     <MapView
                         ref={this.map}
@@ -178,10 +179,11 @@ class Urbi extends React.Component {
                         {this.state.markers.map(this.generateMarker)}
                     </MapView>
 
+
                     <View style={styles.childContainer}>
-                        <Text style={{backgroundColor:'red' , height:100 ,textAlign:'center'}}>TESTO 1</Text>
-                        {/*<Text style={{backgroundColor:'blue',   height:100,textAlign:'center' }}>TESTO 2</Text>*/}
                         <NestedScrollView>
+                            <Text style={{backgroundColor: 'red', height: 100, textAlign: 'center'}}>TESTO 1</Text>
+                            <Text style={{backgroundColor: 'red', height: 100, textAlign: 'center'}}>TESTO 1</Text>
                             <FlatList
                                 data={[
                                     {key: 'Devin'},
@@ -206,6 +208,7 @@ class Urbi extends React.Component {
                                 renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}/>
                         </NestedScrollView>
                     </View>
+                    <Text style={{backgroundColor: 'blue', padding: 20, textAlign: 'center'}}>TESTO 2</Text>
                 </CoordinatorView>
                 <View style={styles.locationButton}>
                     <TouchableHighlight style={styles.centerButton} onPress={this.onCenterPress}>
@@ -262,8 +265,7 @@ const styles = StyleSheet.create({
     },
     childContainer:{
         flexDirection:'column',
-        flex:2,
-        flexWrap:'nowrap',
+        flex: 1,
         width: '100%',
         backgroundColor: 'black',
     },

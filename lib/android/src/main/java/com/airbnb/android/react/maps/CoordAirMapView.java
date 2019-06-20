@@ -7,7 +7,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
-
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -80,6 +79,10 @@ public class CoordAirMapView extends android.support.design.widget.CoordinatorLa
         });
     }
 
+    public void setPeekHeightFirstView(final int peekHeight) {
+        mainBottomSheetBehavior.setPeekHeight(peekHeight);
+
+    }
     public void setStatusBottomSheet(int status) {
         mainBottomSheetBehavior.setState(status);
     }
