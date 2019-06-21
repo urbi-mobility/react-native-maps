@@ -1,43 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.design.widget.CoordinatorLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <android.support.design.widget.AppBarLayout
-            android:id="@+id/mainAppbar"
+    <FrameLayout
+        android:id="@+id/replaceHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:id="@+id/replaceMap"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+
+        <FrameLayout
+            android:id="@+id/replaceSheet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
-            app:layout_collapseMode="none"
-            android:visibility="gone"
-    />
+            app:behavior_peekHeight="80dp"
+            app:layout_behavior="com.hardsoftstudio.widget.AnchorSheetBehavior" />µ
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floatingPoint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:src="@drawable/background_circle"
+            app:layout_anchor="@+id/replaceSheet"
+            app:layout_anchorGravity="top|end" />
 
-    <FrameLayout
-        android:id="@+id/replaceMap"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-
-    <FrameLayout
-        android:id="@+id/replaceSheet"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:behavior_peekHeight="80dp"
-        app:layout_behavior="com.hardsoftstudio.widget.AnchorSheetBehavior" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/floatingPoint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:src="@drawable/background_circle"
-        app:layout_anchor="@+id/replaceSheet"
-        app:layout_anchorGravity="top|end" />
-
-</android.support.design.widget.CoordinatorLayout>
+    </android.support.design.widget.CoordinatorLayout>
+</LinearLayout>

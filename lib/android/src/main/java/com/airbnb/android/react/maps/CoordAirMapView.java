@@ -7,12 +7,14 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
-public class CoordAirMapView extends android.support.design.widget.CoordinatorLayout {
+public class CoordAirMapView extends LinearLayout {
     public CoordAirMapManager manager;
     public FloatingActionButton floatingActionButton;
     public AirMapView airMapView;

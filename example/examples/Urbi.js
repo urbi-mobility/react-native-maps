@@ -159,6 +159,8 @@ class Urbi extends React.Component {
                     style={{flex: 1, width: '100%'}}
                     peekHeight={300}
                     clickHeader={this.clickHeader}>
+
+
                     <MapView
                         ref={this.map}
                         provider={this.props.provider}
@@ -180,35 +182,33 @@ class Urbi extends React.Component {
                     </MapView>
 
 
-                    <View style={styles.childContainer}>
-                        <NestedScrollView>
-                            <Text style={{backgroundColor: 'red', height: 100, textAlign: 'center'}}>TESTO 1</Text>
-                            <Text style={{backgroundColor: 'red', height: 100, textAlign: 'center'}}>TESTO 1</Text>
-                            <FlatList
-                                data={[
-                                    {key: 'Devin'},
-                                    {key: 'Jackson'},
-                                    {key: 'James'},
-                                    {key: 'Joel'},
-                                    {key: 'John'},
-                                    {key: 'Jillian'},
-                                    {key: 'Jimmy'},
-                                    {key: 'Julie'},
-                                    {key: 'A'},
-                                    {key: 'B'},
-                                    {key: 'C'},
-                                    {key: 'D'},
-                                    {key: 'F'},
-                                    {key: 'G'},
-                                    {key: 'H'},
-                                    {key: 'Dq'},
-                                    {key: 'Dvv'},
+                    <NestedScrollView>
+                        <Text style={{backgroundColor: 'red', height: 100, textAlign: 'center'}}>TESTO 1</Text>
+                        <Text style={{backgroundColor: 'red', height: 100, textAlign: 'center'}}>TESTO 1</Text>
+                        <FlatList
+                            data={[
+                                {key: 'Devin'},
+                                {key: 'Jackson'},
+                                {key: 'James'},
+                                {key: 'Joel'},
+                                {key: 'John'},
+                                {key: 'Jillian'},
+                                {key: 'Jimmy'},
+                                {key: 'Julie'},
+                                {key: 'A'},
+                                {key: 'B'},
+                                {key: 'C'},
+                                {key: 'D'},
+                                {key: 'F'},
+                                {key: 'G'},
+                                {key: 'H'},
+                                {key: 'Dq'},
+                                {key: 'Dvv'},
 
-                                ]}
-                                renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}/>
-                        </NestedScrollView>
-                    </View>
-                    <Text style={{backgroundColor: 'blue', padding: 20, textAlign: 'center'}}>TESTO 2</Text>
+                            ]}
+                            renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}/>
+                    </NestedScrollView>
+                    <Text style={{backgroundColor: 'blue', padding:20, textAlign: 'center'}}>TESTO 2</Text>
                 </CoordinatorView>
                 <View style={styles.locationButton}>
                     <TouchableHighlight style={styles.centerButton} onPress={this.onCenterPress}>
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
         flexDirection:'column',
         flex: 1,
         width: '100%',
-        backgroundColor: 'black',
+        backgroundColor: 'green',
     },
 
     childRowContainer: {
