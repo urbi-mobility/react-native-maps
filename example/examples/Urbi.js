@@ -12,12 +12,11 @@ import {
 } from 'react-native';
 import NestedScrollView from 'react-native-nested-scroll-view'
 
-import MapView, {Marker, ProviderPropType} from 'react-native-maps';
+import MapView, {BOTTOM_SHEET_TYPES, CoordinatorView, Marker, ProviderPropType} from 'react-native-maps';
 import berlinVehicleList from './assets/vehicles.json';
 import hamburgVehicleList from './assets/vehicles-hamburg.json';
 import cityList from './assets/cities.json';
 import pins, {cityIcons} from './UrbiImages';
-import CoordinatorView, {BOTTOM_SHEET_TYPES} from "../../lib/components/CoordinatorView";
 
 const LATITUDE = 52.520873;
 const LONGITUDE = 13.409419;
