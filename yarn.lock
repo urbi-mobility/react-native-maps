@@ -6592,6 +6592,11 @@ react-is@^16.8.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.8.3.tgz#4ad8b029c2a718fc0cfc746c8d4e1b7221e5387d"
   integrity sha512-Y4rC1ZJmsxxkkPuMLwvKvlL1Zfpbcu+Bf4ZigkHup3v9EfdYhAlWAaVyA19olXq2o2mGn0w+dFKvk3pVVlYcIA==
 
+react-native-nested-scroll-view@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-nested-scroll-view/-/react-native-nested-scroll-view-8.0.0.tgz#44870b48149ad1482ae0c487f0921811ae195a8f"
+  integrity sha512-Dhn/0D6xk3E2O4i5+szT0XSsU8Uhwb1B1dtu3ZHtSDjlS7cxnbPqmxdSp+KnsRGrYCmdVP/RaSpLEn46T7VyBA==
+
 react-native@0.59.3:
   version "0.59.3"
   resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.59.3.tgz#b984bbe457f63d5515046d32ea5721fd22843548"
