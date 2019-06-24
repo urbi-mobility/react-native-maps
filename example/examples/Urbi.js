@@ -157,6 +157,7 @@ class Urbi extends React.Component {
                     ref={this.coordinator}
                     style={{flex: 1, width: '100%'}}
                     peekHeight={300}
+                    anchorPoint={500}
                     clickHeader={this.clickHeader}>
 
 

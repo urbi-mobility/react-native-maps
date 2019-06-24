@@ -1,7 +1,11 @@
 package com.airbnb.android.react.maps;
 
+import android.content.Context;
+import android.graphics.Point;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -65,6 +69,18 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     public void setPeekHeight(CoordAirMapView view, int peekHeight) {
         view.setPeekHeightFirstView(peekHeight);
     }
+    @ReactProp(name = "anchorPoint")
+    public void setAnchorPoint(CoordAirMapView view, float anchorSize){
+        WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        System.out.println("ANCHOR "+anchorSize+" Y "+size.y);
+        float anchor=convertPxToDp(appContext,anchorSize);
+        float height=convertPxToDp(appContext,size.y);
+        System.out.println("ANCHOR "+anchor+" Y "+height);
+        view.setAnchorPoint(1-(anchor/height));
+    }
 
 
     @Override
@@ -125,5 +141,9 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
             break;
         }
 
+    }
+
+    public float convertPxToDp(Context context, float px) {
+        return (px / context.getResources().getDisplayMetrics().density);
     }
 }

@@ -5,13 +5,9 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableNativeMap;
-import com.facebook.react.uimanager.ThemedReactContext;
 import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
 public class CoordAirMapView extends LinearLayout {
@@ -56,35 +52,20 @@ public class CoordAirMapView extends LinearLayout {
                 airMapView.centerToUserLocation();
             }
         });
+        setStatusBottomSheet(AnchorSheetBehavior.STATE_ANCHOR);
     }
 
-    public void setPeekHeightFirstView(final View view) {
-        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if (view.getHeight() != 0) {
-                    view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    mainBottomSheetBehavior.setPeekHeight(view.getHeight());
-
-                }
-            }
-        });
-        final CoordAirMapView coordAirMapView = this;
-        view.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                WritableMap event = new WritableNativeMap();
-                event.putString("message", "Cliccato Header");
-                manager.pushEvent((ThemedReactContext) getContext(), coordAirMapView, "clickHeader", event);
-
-            }
-        });
-    }
 
     public void setPeekHeightFirstView(final int peekHeight) {
         mainBottomSheetBehavior.setPeekHeight(peekHeight);
 
     }
+
+    public void setAnchorPoint(final float anchorPoint) {
+        mainBottomSheetBehavior.setAnchorOffset(anchorPoint);
+
+    }
+
     public void setStatusBottomSheet(int status) {
         mainBottomSheetBehavior.setState(status);
     }
