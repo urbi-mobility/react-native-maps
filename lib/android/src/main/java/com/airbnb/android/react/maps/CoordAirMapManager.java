@@ -75,10 +75,8 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        System.out.println("ANCHOR "+anchorSize+" Y "+size.y);
         float anchor=convertPxToDp(appContext,anchorSize);
         float height=convertPxToDp(appContext,size.y);
-        System.out.println("ANCHOR "+anchor+" Y "+height);
         view.setAnchorPoint(1-(anchor/height));
     }
 
@@ -110,7 +108,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     @Nullable
     @Override
     public Map<String, Integer> getCommandsMap() {
-        return MapBuilder.of("setStatusExpandable", CHANGE_STATUS_BOTTONSHEET);
+        return MapBuilder.of("setStatus", CHANGE_STATUS_BOTTONSHEET);
     }
     /***
      *
@@ -123,8 +121,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
         switch (index) {
             case 0: {
-                if (child instanceof AirMapView)
-                    parent.setAirMapView((AirMapView) child);
+                foundAirMapView(parent, child);
                 ViewGroup view = parent.findViewById(R.id.replaceMap);
                 view.addView(child);
             }
@@ -142,6 +139,18 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
         }
 
     }
+
+    private void foundAirMapView(CoordAirMapView parent, View child) {
+        if (child instanceof AirMapView) {
+            parent.setAirMapView((AirMapView) child);
+
+        } else if (child instanceof ViewGroup) {
+            for (int i = 0; i < ((ViewGroup) child).getChildCount(); i++) {
+                foundAirMapView(parent, ((ViewGroup) child).getChildAt(i));
+            }
+        }
+    }
+
 
     public float convertPxToDp(Context context, float px) {
         return (px / context.getResources().getDisplayMetrics().density);

@@ -147,7 +147,7 @@ class Urbi extends React.Component {
     }
 
     onTest(value) {
-        this.coordinator.current.setStatusExpandable(value)
+        this.coordinator.current.setStatus(value)
     }
 
     render() {
@@ -157,7 +157,7 @@ class Urbi extends React.Component {
                     ref={this.coordinator}
                     style={{flex: 1, width: '100%'}}
                     peekHeight={300}
-                    anchorPoint={500}
+                    anchorPoint={700}
                     clickHeader={this.clickHeader}>
 
 

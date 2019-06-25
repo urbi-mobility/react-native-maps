@@ -3,7 +3,6 @@ package com.airbnb.android.react.maps;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -12,7 +11,7 @@ import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
 public class CoordAirMapView extends LinearLayout {
     public CoordAirMapManager manager;
-    public FloatingActionButton floatingActionButton;
+    public View floatingActionButton;
     public AirMapView airMapView;
 
     private AnchorSheetBehavior<FrameLayout> mainBottomSheetBehavior;
