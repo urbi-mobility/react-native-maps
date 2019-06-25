@@ -12,6 +12,7 @@ import android.location.Location;
 import android.os.Build;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.MotionEventCompat;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,24 +20,56 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import com.facebook.react.bridge.*;
+
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.LifecycleEventListener;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.EventDispatcher;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.*;
-import com.google.android.gms.maps.model.*;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.IndoorBuilding;
+import com.google.android.gms.maps.model.IndoorLevel;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PointOfInterest;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.data.kml.KmlContainer;
 import com.google.maps.android.data.kml.KmlLayer;
 import com.google.maps.android.data.kml.KmlPlacemark;
 import com.google.maps.android.data.kml.KmlStyle;
+
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static android.support.v4.content.PermissionChecker.checkSelfPermission;
@@ -882,25 +915,28 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   public void updateExtraData(Object extraData) {
     // if boundsToMove is not null, we now have the MapView's width/height, so we can apply
     // a proper camera move
-    if (boundsToMove != null) {
-      HashMap<String, Float> data = (HashMap<String, Float>) extraData;
-      int width = data.get("width") == null ? 0 : data.get("width").intValue();
-      int height = data.get("height") == null ? 0 : data.get("height").intValue();
+    try {
+      if (boundsToMove != null) {
+        HashMap<String, Float> data = (HashMap<String, Float>) extraData;
+        int width = data.get("width") == null ? 0 : data.get("width").intValue();
+        int height = data.get("height") == null ? 0 : data.get("height").intValue();
 
-      //fix for https://github.com/react-native-community/react-native-maps/issues/245,
-      //it's not guaranteed the passed-in height and width would be greater than 0.
-      if (width <= 0 || height <= 0) {
-        map.moveCamera(CameraUpdateFactory.newLatLngBounds(boundsToMove, 0));
-      } else {
-        map.moveCamera(CameraUpdateFactory.newLatLngBounds(boundsToMove, width, height, 0));
+        //fix for https://github.com/react-native-community/react-native-maps/issues/245,
+        //it's not guaranteed the passed-in height and width would be greater than 0.
+        if (width <= 0 || height <= 0) {
+          map.moveCamera(CameraUpdateFactory.newLatLngBounds(boundsToMove, 0));
+        } else {
+          map.moveCamera(CameraUpdateFactory.newLatLngBounds(boundsToMove, width, height, 0));
+        }
+
+        boundsToMove = null;
+        cameraToSet = null;
+      } else if (cameraToSet != null) {
+        map.moveCamera(cameraToSet);
+        cameraToSet = null;
       }
-
-      boundsToMove = null;
-      cameraToSet = null;
-    }
-    else if (cameraToSet != null) {
-      map.moveCamera(cameraToSet);
-      cameraToSet = null;
+    } catch (Exception e) {
+      Log.e("updateExtraData", Log.getStackTraceString(e));
     }
   }
 
