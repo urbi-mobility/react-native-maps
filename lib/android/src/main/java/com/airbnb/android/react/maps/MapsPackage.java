@@ -45,18 +45,18 @@ public class MapsPackage implements ReactPackage {
     mapManager.setMarkerManager(annotationManager);
 
     return Arrays.<ViewManager>asList(
-            calloutManager,
-            annotationManager,
-            polylineManager,
-            polygonManager,
-            circleManager,
-            mapManager,
-            coordAirMapManager,
-            mapLiteManager,
-            urlTileManager,
-            gsUrlTileManager,
-            localTileManager,
-            overlayManager
+        calloutManager,
+        annotationManager,
+        polylineManager,
+        polygonManager,
+        circleManager,
+        mapManager,
+        coordAirMapManager,
+        mapLiteManager,
+        urlTileManager,
+        gsUrlTileManager,
+        localTileManager,
+        overlayManager
     );
   }
 }

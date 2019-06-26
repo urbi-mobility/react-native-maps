@@ -26,7 +26,7 @@ public class ExampleApplication extends Application implements ReactApplication 
     @Override protected List<ReactPackage> getPackages() {
       return Arrays.asList(
           new MainReactPackage(),
-              new RNNestedScrollViewPackage(),
+          new RNNestedScrollViewPackage(),
           new MapsPackage());
     }
   };

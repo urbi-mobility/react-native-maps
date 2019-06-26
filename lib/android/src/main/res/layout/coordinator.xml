@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             app:behavior_peekHeight="80dp"
             app:layout_insetEdge="bottom"
-            app:layout_behavior="com.hardsoftstudio.widget.AnchorSheetBehavior" />µ
+            app:layout_behavior="com.hardsoftstudio.widget.AnchorSheetBehavior" />
 
 
     </android.support.design.widget.CoordinatorLayout>
