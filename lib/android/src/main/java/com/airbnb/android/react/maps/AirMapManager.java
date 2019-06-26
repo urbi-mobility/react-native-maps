@@ -1,12 +1,7 @@
 package com.airbnb.android.react.maps;
 
 import android.view.View;
-
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.*;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.LayoutShadowNode;
@@ -20,10 +15,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 public class AirMapManager extends ViewGroupManager<AirMapView> {
 
@@ -63,9 +57,16 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     this.googleMapOptions = new GoogleMapOptions();
   }
 
+  public AirMapManager(ReactApplicationContext context, GoogleMapOptions googleMapOptions) {
+    this.appContext = context;
+    this.googleMapOptions = googleMapOptions;
+  }
+
+
   public AirMapMarkerManager getMarkerManager() {
     return this.markerManager;
   }
+
   public void setMarkerManager(AirMapMarkerManager markerManager) {
     this.markerManager = markerManager;
   }
@@ -80,14 +81,20 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     return new AirMapView(context, this.appContext, this, googleMapOptions);
   }
 
-  private void emitMapError(ThemedReactContext context, String message, String type) {
-    WritableMap error = Arguments.createMap();
-    error.putString("message", message);
-    error.putString("type", type);
-
-    context
-        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit("onError", error);
+  public static <K, V> Map<K, V> CreateMap(
+      K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7, V v7, K k8, V v8, K k9, V v9, K k10, V v10) {
+    Map map = new HashMap<K, V>();
+    map.put(k1, v1);
+    map.put(k2, v2);
+    map.put(k3, v3);
+    map.put(k4, v4);
+    map.put(k5, v5);
+    map.put(k6, v6);
+    map.put(k7, v7);
+    map.put(k8, v8);
+    map.put(k9, v9);
+    map.put(k10, v10);
+    return map;
   }
 
   @ReactProp(name = "region")
@@ -279,6 +286,16 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     view.setCityPins(cityPins);
   }
 
+  private void emitMapError(ThemedReactContext context, String message, String type) {
+    WritableMap error = Arguments.createMap();
+    error.putString("message", message);
+    error.putString("type", type);
+
+    context
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("onError", error);
+  }
+
   @Override
   public void receiveCommand(AirMapView view, int commandId, @Nullable ReadableArray args) {
     Integer duration;
@@ -308,8 +325,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
         lng = region.getDouble("longitude");
         lat = region.getDouble("latitude");
         LatLng location = new LatLng(lat, lng);
-        bearing = (float)args.getDouble(1);
-        angle = (float)args.getDouble(2);
+        bearing = (float) args.getDouble(1);
+        angle = (float) args.getDouble(2);
         duration = args.getInt(3);
         view.animateToNavigation(location, bearing, angle, duration);
         break;
@@ -337,13 +354,13 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
         break;
 
       case ANIMATE_TO_VIEWING_ANGLE:
-        angle = (float)args.getDouble(0);
+        angle = (float) args.getDouble(0);
         duration = args.getInt(1);
         view.animateToViewingAngle(angle, duration);
         break;
 
       case ANIMATE_TO_BEARING:
-        bearing = (float)args.getDouble(0);
+        bearing = (float) args.getDouble(0);
         duration = args.getInt(1);
         view.animateToBearing(bearing, duration);
         break;
@@ -424,27 +441,11 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     );
 
     map.putAll(MapBuilder.of(
-      "setMapBoundaries", SET_MAP_BOUNDARIES,
-      "setIndoorActiveLevelIndex", SET_INDOOR_ACTIVE_LEVEL_INDEX,
-      "centerToUserLocation", CENTER_TO_USER_LOCATION
+        "setMapBoundaries", SET_MAP_BOUNDARIES,
+        "setIndoorActiveLevelIndex", SET_INDOOR_ACTIVE_LEVEL_INDEX,
+        "centerToUserLocation", CENTER_TO_USER_LOCATION
     ));
 
-    return map;
-  }
-
-  public static <K, V> Map<K, V> CreateMap(
-  K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7, V v7, K k8, V v8, K k9, V v9, K k10, V v10) {
-    Map map = new HashMap<K, V>();
-    map.put(k1, v1);
-    map.put(k2, v2);
-    map.put(k3, v3);
-    map.put(k4, v4);
-    map.put(k5, v5);
-    map.put(k6, v6);
-    map.put(k7, v7);
-    map.put(k8, v8);
-    map.put(k9, v9);
-    map.put(k10, v10);
     return map;
   }
 

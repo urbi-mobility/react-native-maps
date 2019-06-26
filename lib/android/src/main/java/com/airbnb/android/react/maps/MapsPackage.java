@@ -1,7 +1,6 @@
 package com.airbnb.android.react.maps;
 
 import android.app.Activity;
-
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -38,6 +37,7 @@ public class MapsPackage implements ReactPackage {
     AirMapCircleManager circleManager = new AirMapCircleManager(reactContext);
     AirMapManager mapManager = new AirMapManager(reactContext);
     AirMapLiteManager mapLiteManager = new AirMapLiteManager(reactContext);
+    CoordAirMapManager coordAirMapManager = new CoordAirMapManager(reactContext);
     AirMapUrlTileManager urlTileManager = new AirMapUrlTileManager(reactContext);
     AirMapWMSTileManager gsUrlTileManager = new AirMapWMSTileManager(reactContext);
     AirMapLocalTileManager localTileManager = new AirMapLocalTileManager(reactContext);
@@ -51,6 +51,7 @@ public class MapsPackage implements ReactPackage {
         polygonManager,
         circleManager,
         mapManager,
+        coordAirMapManager,
         mapLiteManager,
         urlTileManager,
         gsUrlTileManager,
