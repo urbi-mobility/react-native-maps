@@ -87,16 +87,16 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
         if (args != null && args.size() > 0) {
           switch (args.getString(0)) {
             case EXPAND:
-              root.setStatusBottomSheet(AnchorSheetBehavior.STATE_EXPANDED);
+              root.setBottomSheetStatus(AnchorSheetBehavior.STATE_EXPANDED);
               break;
             case HIDE:
-              root.setStatusBottomSheet(AnchorSheetBehavior.STATE_HIDDEN);
+              root.setBottomSheetStatus(AnchorSheetBehavior.STATE_HIDDEN);
               break;
             case COLLAPSED:
-              root.setStatusBottomSheet(AnchorSheetBehavior.STATE_COLLAPSED);
+              root.setBottomSheetStatus(AnchorSheetBehavior.STATE_COLLAPSED);
               break;
             case ANCHOR:
-              root.setStatusBottomSheet(AnchorSheetBehavior.STATE_ANCHOR);
+              root.setBottomSheetStatus(AnchorSheetBehavior.STATE_ANCHOR);
               break;
           }
         }

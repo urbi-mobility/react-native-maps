@@ -51,7 +51,7 @@ public class CoordAirMapView extends LinearLayout {
         airMapView.centerToUserLocation();
       }
     });
-    setStatusBottomSheet(AnchorSheetBehavior.STATE_ANCHOR);
+    setBottomSheetStatus(AnchorSheetBehavior.STATE_ANCHOR);
   }
 
   public void setPeekHeightFirstView(final int peekHeight) {
@@ -62,7 +62,7 @@ public class CoordAirMapView extends LinearLayout {
     mainBottomSheetBehavior.setAnchorOffset(anchorPoint);
   }
 
-  public void setStatusBottomSheet(int status) {
+  public void setBottomSheetStatus(int status) {
     mainBottomSheetBehavior.setState(status);
   }
 
