@@ -80,7 +80,7 @@ class Urbi extends React.Component {
         this.onCityChange = this.onCityChange.bind(this);
         this.onCenterPress = this.onCenterPress.bind(this);
         this.onFilterPress = this.onFilterPress.bind(this);
-        this.clickHeader = this.clickHeader.bind(this);
+        this.newStatusValue = this.newStatusValue.bind(this);
         this.onTest = this.onTest.bind(this);
 
 
@@ -111,7 +111,7 @@ class Urbi extends React.Component {
         this.setState({selected: null});
     }
 
-    clickHeader(e) {
+    newStatusValue(e) {
         alert(JSON.stringify(e))
     }
 
@@ -158,7 +158,8 @@ class Urbi extends React.Component {
                     style={{flex: 1, width: '100%'}}
                     peekHeight={300}
                     anchorPoint={700}
-                    clickHeader={this.clickHeader}>
+                    newStatusValue={this.newStatusValue}
+                    bottomSheetStatus={BOTTOM_SHEET_TYPES.ANCHOR}>
 
 
                     <MapView

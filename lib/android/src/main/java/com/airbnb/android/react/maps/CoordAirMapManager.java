@@ -17,6 +17,7 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -28,10 +29,26 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   private final ReactApplicationContext appContext;
 
   private final int CHANGE_STATUS_BOTTOM_SHEET = 1;
-  private final String EXPAND = "EXPAND";
-  private final String COLLAPSED = "COLLAPSED";
-  private final String HIDE = "HIDE";
-  private final String ANCHOR = "ANCHOR";
+  private final static String EXPAND = "EXPAND";
+  private final static String COLLAPSED = "COLLAPSED";
+  private final static String HIDE = "HIDE";
+  private final static String ANCHOR = "ANCHOR";
+  private final static String DRAGGING = "DRAGGING";
+
+  public final static Map<Integer, String> stateConvert = new HashMap<Integer, String>() {{
+    put(AnchorSheetBehavior.STATE_ANCHOR, ANCHOR);
+    put(AnchorSheetBehavior.STATE_COLLAPSED, COLLAPSED);
+    put(AnchorSheetBehavior.STATE_DRAGGING, DRAGGING);
+    put(AnchorSheetBehavior.STATE_EXPANDED, EXPAND);
+  }};
+
+  private final static Map<String, Integer> inverseStateConvert = new HashMap<String, Integer>() {{
+    put(ANCHOR, AnchorSheetBehavior.STATE_ANCHOR);
+    put(COLLAPSED, AnchorSheetBehavior.STATE_COLLAPSED);
+    put(DRAGGING, AnchorSheetBehavior.STATE_DRAGGING);
+    put(EXPAND, AnchorSheetBehavior.STATE_EXPANDED);
+  }};
+
 
   public CoordAirMapManager(ReactApplicationContext context) {
     this.appContext = context;
@@ -53,7 +70,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   @Nullable
   public Map getExportedCustomDirectEventTypeConstants() {
     Map<String, Map<String, String>> map = MapBuilder.of(
-        "clickHeader", MapBuilder.of("registrationName", "clickHeader")
+        "newStatusValue", MapBuilder.of("registrationName", "newStatusValue")
     );
     return map;
   }
@@ -79,26 +96,19 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     view.setAnchorPoint(1 - (anchor / height));
   }
 
+  @ReactProp(name = "bottomSheetStatus")
+  public void setBottomSheetStatus(CoordAirMapView view, String status) {
+    if (inverseStateConvert.containsKey(status))
+      view.setBottomSheetStatus(inverseStateConvert.get(status));
+  }
 
   @Override
   public void receiveCommand(@Nonnull CoordAirMapView root, int commandId, @Nullable ReadableArray args) {
     switch (commandId) {
       case CHANGE_STATUS_BOTTOM_SHEET:
         if (args != null && args.size() > 0) {
-          switch (args.getString(0)) {
-            case EXPAND:
-              root.setBottomSheetStatus(AnchorSheetBehavior.STATE_EXPANDED);
-              break;
-            case HIDE:
-              root.setBottomSheetStatus(AnchorSheetBehavior.STATE_HIDDEN);
-              break;
-            case COLLAPSED:
-              root.setBottomSheetStatus(AnchorSheetBehavior.STATE_COLLAPSED);
-              break;
-            case ANCHOR:
-              root.setBottomSheetStatus(AnchorSheetBehavior.STATE_ANCHOR);
-              break;
-          }
+          String key = args.getString(0);
+          root.setBottomSheetStatus(inverseStateConvert.get(key));
         }
         break;
     }
