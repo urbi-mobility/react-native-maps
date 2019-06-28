@@ -7,6 +7,9 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.uimanager.ThemedReactContext;
 import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
 public class CoordAirMapView extends LinearLayout {
@@ -28,16 +31,21 @@ public class CoordAirMapView extends LinearLayout {
     floatingActionButton = view.findViewById(R.id.floatingPoint);
     mainBottomSheetBehavior = AnchorSheetBehavior.from(replaceSheet);
     mainBottomSheetBehavior.setAnchorOffset(0.25f);
+    final CoordAirMapView coordAirMapView=this;
     mainBottomSheetBehavior.setAnchorSheetCallback(new AnchorSheetBehavior.AnchorSheetCallback() {
       @Override
       public void onStateChanged(@NonNull View bottomSheet, int newState) {
 
-        // this part hides the button immediately and waits bottom sheet
-        // to collapse to show
         if (BottomSheetBehavior.STATE_DRAGGING == newState) {
           floatingActionButton.animate().scaleX(1).scaleY(1).setDuration(300).start();
         } else if (BottomSheetBehavior.STATE_EXPANDED == newState) {
           floatingActionButton.animate().scaleX(0).scaleY(0).setDuration(300).start();
+        }
+//        //Send Event to Javascript
+        if(CoordAirMapManager.stateConvert.containsKey(newState)) {
+          WritableMap event = new WritableNativeMap();
+          event.putString("status", CoordAirMapManager.stateConvert.get(newState));
+          manager.pushEvent((ThemedReactContext) getContext(), coordAirMapView, "newStatusValue", event);
         }
       }
 
@@ -51,7 +59,6 @@ public class CoordAirMapView extends LinearLayout {
         airMapView.centerToUserLocation();
       }
     });
-    setBottomSheetStatus(AnchorSheetBehavior.STATE_ANCHOR);
   }
 
   public void setPeekHeightFirstView(final int peekHeight) {

@@ -158,7 +158,8 @@ class Urbi extends React.Component {
                     style={{flex: 1, width: '100%'}}
                     peekHeight={300}
                     anchorPoint={700}
-                    clickHeader={this.clickHeader}>
+                    newStatusValue={this.clickHeader}
+                    bottomSheetStatus={BOTTOM_SHEET_TYPES.ANCHOR}>
 
 
                     <MapView
