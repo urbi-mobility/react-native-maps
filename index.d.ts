@@ -189,12 +189,10 @@ declare module "react-native-maps" {
 
     type MapTypes = 'standard' | 'satellite' | 'hybrid' | 'terrain' | 'none' | 'mutedStandard';
 
-    type BottomSheetTypes = 'EXPAND' | 'HIDE' | 'COLLAPSED' | 'ANCHOR' | 'DRAGGING';
-
     export interface CoordAirMapViewProps {
         peekHeight: number;
         anchorPoint: number;
-        bottomSheetStatus?: string;
+        bottomSheetStatus?: 'EXPAND' | 'HIDE' | 'COLLAPSED' | 'ANCHOR' | 'DRAGGING'
         newStatusValue?: (event: CoordinatorEvent) => void;
     }
 
@@ -510,14 +508,6 @@ declare module "react-native-maps" {
         TERRAIN: MapTypes,
         NONE: MapTypes,
         MUTEDSTANDARD: MapTypes,
-    }
-
-    export const BOTTOM_SHEET_TYPES: {
-        EXPAND: BottomSheetTypes,
-        HIDE: BottomSheetTypes,
-        COLLAPSED: BottomSheetTypes,
-        ANCHOR: BottomSheetTypes,
-        DRAGGING: BottomSheetTypes,
     }
 
     export const PROVIDER_DEFAULT: null;
