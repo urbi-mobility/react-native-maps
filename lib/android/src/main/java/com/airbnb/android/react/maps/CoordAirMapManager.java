@@ -42,7 +42,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     put(AnchorSheetBehavior.STATE_EXPANDED, EXPAND);
   }};
 
-  private final static Map<String, Integer> inveseStateConvert = new HashMap<String, Integer>() {{
+  private final static Map<String, Integer> inverseStateConvert = new HashMap<String, Integer>() {{
     put(ANCHOR, AnchorSheetBehavior.STATE_ANCHOR);
     put(COLLAPSED, AnchorSheetBehavior.STATE_COLLAPSED);
     put(DRAGGING, AnchorSheetBehavior.STATE_DRAGGING);
@@ -98,8 +98,8 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
   @ReactProp(name = "bottomSheetStatus")
   public void setBottomSheetStatus(CoordAirMapView view, String status) {
-    if (inveseStateConvert.containsKey(status))
-      view.setBottomSheetStatus(inveseStateConvert.get(status));
+    if (inverseStateConvert.containsKey(status))
+      view.setBottomSheetStatus(inverseStateConvert.get(status));
   }
 
   @Override
@@ -108,7 +108,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       case CHANGE_STATUS_BOTTOM_SHEET:
         if (args != null && args.size() > 0) {
           String key = args.getString(0);
-          root.setBottomSheetStatus(inveseStateConvert.get(key));
+          root.setBottomSheetStatus(inverseStateConvert.get(key));
         }
         break;
     }
