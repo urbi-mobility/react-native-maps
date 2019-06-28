@@ -55,6 +55,10 @@ declare module "react-native-maps" {
         position: Point;
     }> {}
 
+    export interface CoordinatorEvent<T = {}> extends NativeSyntheticEvent<T & {
+        status: String;
+    }> {}
+
     export type LineCapType = 'butt' | 'round' | 'square';
     export type LineJoinType = 'miter' | 'round' | 'bevel';
 
@@ -185,6 +189,15 @@ declare module "react-native-maps" {
 
     type MapTypes = 'standard' | 'satellite' | 'hybrid' | 'terrain' | 'none' | 'mutedStandard';
 
+    type BottomSheetTypes = 'EXPAND' | 'HIDE' | 'COLLAPSED' | 'ANCHOR' | 'DRAGGING';
+
+    export interface CoordAirMapViewProps {
+        peekHeight: number;
+        anchorPoint: number;
+        bottomSheetStatus?: string;
+        newStatusValue?: (event: CoordinatorEvent) => void;
+    }
+
     export interface MapViewProps extends ViewProperties {
         provider?: 'google' | null;
         customMapStyle?: MapStyleElement[];
@@ -268,6 +281,10 @@ declare module "react-native-maps" {
         pointForCoordinate(coordinate: LatLng): Promise<Point>;
         coordinateForPoint(point: Point): Promise<LatLng>;
         centerToUserLocation(): void;
+    }
+
+    export class CoordinatorView extends React.Component<CoordAirMapViewProps, any> {
+
     }
 
     export class MapViewAnimated extends MapView {
@@ -493,6 +510,14 @@ declare module "react-native-maps" {
         TERRAIN: MapTypes,
         NONE: MapTypes,
         MUTEDSTANDARD: MapTypes,
+    }
+
+    export const BOTTOM_SHEET_TYPES: {
+        EXPAND: BottomSheetTypes,
+        HIDE: BottomSheetTypes,
+        COLLAPSED: BottomSheetTypes,
+        ANCHOR: BottomSheetTypes,
+        DRAGGING: BottomSheetTypes,
     }
 
     export const PROVIDER_DEFAULT: null;
