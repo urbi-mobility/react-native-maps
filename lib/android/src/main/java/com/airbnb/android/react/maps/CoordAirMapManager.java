@@ -96,12 +96,6 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     view.setAnchorPoint(1 - (anchor / height));
   }
 
-  @ReactProp(name = "bottomSheetStatus")
-  public void setBottomSheetStatus(CoordAirMapView view, String status) {
-    if (inverseStateConvert.containsKey(status))
-      view.setBottomSheetStatus(inverseStateConvert.get(status));
-  }
-
   @Override
   public void receiveCommand(@Nonnull CoordAirMapView root, int commandId, @Nullable ReadableArray args) {
     switch (commandId) {

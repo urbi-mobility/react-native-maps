@@ -55,10 +55,6 @@ declare module "react-native-maps" {
         position: Point;
     }> {}
 
-    export interface CoordinatorEvent<T = {}> extends NativeSyntheticEvent<T & {
-        status: String;
-    }> {}
-
     export type LineCapType = 'butt' | 'round' | 'square';
     export type LineJoinType = 'miter' | 'round' | 'bevel';
 
@@ -192,8 +188,7 @@ declare module "react-native-maps" {
     export interface CoordinatorViewProps extends ViewProperties {
         peekHeight: number;
         anchorPoint: number;
-        bottomSheetStatus?: 'EXPAND' | 'HIDE' | 'COLLAPSED' | 'ANCHOR' | 'DRAGGING'
-        newStatusValue?: (event: CoordinatorEvent) => void;
+        onStatusChanged?: (newStatus: 'EXPAND' | 'HIDE' | 'COLLAPSED' | 'ANCHOR' | 'DRAGGING') => void;
     }
 
     export interface MapViewProps extends ViewProperties {
@@ -281,8 +276,8 @@ declare module "react-native-maps" {
         centerToUserLocation(): void;
     }
 
-    export class CoordinatorView extends React.Component<CoordAirMapViewProps, any> {
-
+    export class CoordinatorView extends React.Component<CoordinatorViewProps, any> {
+        setStatus(newStatus: 'EXPAND' | 'HIDE' | 'COLLAPSED' | 'ANCHOR' | 'DRAGGING'): void;
     }
 
     export class MapViewAnimated extends MapView {
