@@ -233,13 +233,17 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   }
 
   private void rescaleIcon(AirMapMarker airMapMarker, double scaleFactor) {
+
+    // if there's no icon to rescale, skip everything
+    Bitmap b = airMapMarker.getIconBitmap();
+    if (b == null) return;
+
     Marker m = airMapMarker.getMarker();
     if (m != null && m.getTag() != null) {
       airMapMarker.getMarker().remove();
     }
     markerMap.remove(airMapMarker.getMarker());
 
-    Bitmap b = airMapMarker.getIconBitmap();
     Bitmap scaled = Bitmap.createScaledBitmap(b, (int) (b.getWidth() * scaleFactor), (int) (b.getHeight() * scaleFactor), false);
     airMapMarker.setIconBitmapDescriptor(BitmapDescriptorFactory.fromBitmap(scaled), scaled);
     airMapMarker.addToMap(map, this);
