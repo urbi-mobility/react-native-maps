@@ -189,7 +189,7 @@ declare module "react-native-maps" {
 
     type MapTypes = 'standard' | 'satellite' | 'hybrid' | 'terrain' | 'none' | 'mutedStandard';
 
-    export interface CoordAirMapViewProps extends ViewProperties {
+    export interface CoordinatorViewProps extends ViewProperties {
         peekHeight: number;
         anchorPoint: number;
         bottomSheetStatus?: 'EXPAND' | 'HIDE' | 'COLLAPSED' | 'ANCHOR' | 'DRAGGING'
