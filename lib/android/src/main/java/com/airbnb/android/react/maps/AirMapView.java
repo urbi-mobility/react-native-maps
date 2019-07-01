@@ -552,7 +552,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   }
 
   private void centerCameraWithOffsetTo(final LatLng positionWithNoOffset, final int delayMs, Integer newZoomLevel) {
-    if (newZoomLevel != null && Math.ceil(map.getCameraPosition().zoom) < newZoomLevel) {
+    if (newZoomLevel != null) {
       map.animateCamera(CameraUpdateFactory.newLatLngZoom(positionWithNoOffset, newZoomLevel), delayMs, new GoogleMap.CancelableCallback() {
         @Override
         public void onFinish() {
