@@ -2,12 +2,10 @@ import React from 'react';
 import {
   FlatList,
   Image,
-  Platform,
   StyleSheet,
   Text,
   ToastAndroid,
   TouchableHighlight,
-  UIManager,
   View,
 } from 'react-native';
 import NestedScrollView from 'react-native-nested-scroll-view';
@@ -25,10 +23,6 @@ import pins, { cityIcons } from './UrbiImages';
 
 const LATITUDE = 52.520873;
 const LONGITUDE = 13.409419;
-
-if (Platform.OS !== 'ios' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 const vehicleLists = {
   berlin: berlinVehicleList,

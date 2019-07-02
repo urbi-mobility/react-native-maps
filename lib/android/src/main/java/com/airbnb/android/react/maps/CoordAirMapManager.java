@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
@@ -28,6 +29,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   private final ReactApplicationContext appContext;
 
   private final int CHANGE_STATUS_BOTTOM_SHEET = 1;
+  private final AtomicInteger viewCount = new AtomicInteger();
   private final static String EXPAND = "EXPAND";
   private final static String COLLAPSED = "COLLAPSED";
   private final static String HIDE = "HIDE";
@@ -114,6 +116,8 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   @Override
   public void addView(CoordAirMapView parent, View child, int index) {
 
+    viewCount.incrementAndGet();
+
     switch (index) {
       case 0: {
         findAirMapView(parent, child);
@@ -136,6 +140,17 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   }
 
   @Override
+  public void removeAllViews(CoordAirMapView parent) {
+    super.removeAllViews(parent);
+    viewCount.set(0);
+  }
+
+  @Override
+  public int getChildCount(CoordAirMapView parent) {
+    return viewCount.get();
+  }
+
+  @Override
   public void removeViewAt(CoordAirMapView parent, int index) {
     switch (index) {
       case 0: {
@@ -154,11 +169,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       }
       break;
     }
-  }
-
-  @Override
-  public void removeView(CoordAirMapView parent, View view) {
-    super.removeView(parent, view);
+    viewCount.decrementAndGet();
   }
 
   private void findAirMapView(CoordAirMapView parent, View child) {
