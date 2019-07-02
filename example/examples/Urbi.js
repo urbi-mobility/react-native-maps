@@ -178,68 +178,72 @@ class Urbi extends React.Component {
             {this.state.markers.map(this.generateMarker)}
           </MapView>
 
-          {this.state.selected ? (
-            <View style={styles.bottomPanel}>
-              <Text style={styles.text}>Selected: {this.state.selected}</Text>
-            </View>
-          ) : (
-            <NestedScrollView>
+          <NestedScrollView>
+            {this.state.selected ? (
+              <View style={styles.bottomPanel}>
+                <Text style={styles.text}>Selected: {this.state.selected}</Text>
+              </View>
+            ) : (
+              <View>
+                <Text
+                  style={{
+                    backgroundColor: 'red',
+                    height: 100,
+                    textAlign: 'center',
+                  }}
+                >
+                  TESTO 1
+                </Text>
+                <Text
+                  style={{
+                    backgroundColor: 'red',
+                    height: 100,
+                    textAlign: 'center',
+                  }}
+                >
+                  TESTO 1
+                </Text>
+                <FlatList
+                  data={[
+                    { key: 'Devin' },
+                    { key: 'Jackson' },
+                    { key: 'James' },
+                    { key: 'Joel' },
+                    { key: 'John' },
+                    { key: 'Jillian' },
+                    { key: 'Jimmy' },
+                    { key: 'Julie' },
+                    { key: 'A' },
+                    { key: 'B' },
+                    { key: 'C' },
+                    { key: 'D' },
+                    { key: 'F' },
+                    { key: 'G' },
+                    { key: 'H' },
+                    { key: 'Dq' },
+                    { key: 'Dvv' },
+                  ]}
+                  renderItem={({ item }) => (
+                    <Text style={styles.item}>{item.key}</Text>
+                  )}
+                />
+              </View>
+            )}
+          </NestedScrollView>
+          <View>
+            {this.state.showHeader ? (
               <Text
                 style={{
-                  backgroundColor: 'red',
-                  height: 100,
+                  backgroundColor: '#2e5263',
+                  padding: 20,
                   textAlign: 'center',
+                  color: 'white',
                 }}
               >
-                TESTO 1
+                header
               </Text>
-              <Text
-                style={{
-                  backgroundColor: 'red',
-                  height: 100,
-                  textAlign: 'center',
-                }}
-              >
-                TESTO 1
-              </Text>
-              <FlatList
-                data={[
-                  { key: 'Devin' },
-                  { key: 'Jackson' },
-                  { key: 'James' },
-                  { key: 'Joel' },
-                  { key: 'John' },
-                  { key: 'Jillian' },
-                  { key: 'Jimmy' },
-                  { key: 'Julie' },
-                  { key: 'A' },
-                  { key: 'B' },
-                  { key: 'C' },
-                  { key: 'D' },
-                  { key: 'F' },
-                  { key: 'G' },
-                  { key: 'H' },
-                  { key: 'Dq' },
-                  { key: 'Dvv' },
-                ]}
-                renderItem={({ item }) => (
-                  <Text style={styles.item}>{item.key}</Text>
-                )}
-              />
-            </NestedScrollView>
-          )}
-          {this.state.showHeader && (
-            <Text
-              style={{
-                backgroundColor: '#2e5263',
-                padding: 20,
-                textAlign: 'center',
-                color: 'white',
-              }}
-            >
-              header
-            </Text>
-          )}
+            ) : <View />}
+          </View>
         </CoordinatorView>
         <View style={styles.toggleHeaderButton}>
           <TouchableHighlight

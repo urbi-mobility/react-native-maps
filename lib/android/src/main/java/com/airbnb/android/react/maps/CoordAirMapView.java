@@ -30,7 +30,6 @@ public class CoordAirMapView extends LinearLayout {
     FrameLayout replaceSheet = view.findViewById(R.id.replaceSheet);
     floatingActionButton = view.findViewById(R.id.floatingPoint);
     mainBottomSheetBehavior = AnchorSheetBehavior.from(replaceSheet);
-    mainBottomSheetBehavior.setAnchorOffset(0.25f);
     final CoordAirMapView coordAirMapView = this;
     mainBottomSheetBehavior.setAnchorSheetCallback(new AnchorSheetBehavior.AnchorSheetCallback() {
       @Override
@@ -67,6 +66,7 @@ public class CoordAirMapView extends LinearLayout {
 
   public void setAnchorPoint(final float anchorPoint) {
     mainBottomSheetBehavior.setAnchorOffset(anchorPoint);
+    mainBottomSheetBehavior.setState(AnchorSheetBehavior.STATE_ANCHOR);
   }
 
   public void setBottomSheetStatus(int status) {
