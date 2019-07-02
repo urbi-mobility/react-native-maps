@@ -2,11 +2,11 @@ package com.airbnb.android.react.maps;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
@@ -17,11 +17,10 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
@@ -70,7 +69,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   @Nullable
   public Map getExportedCustomDirectEventTypeConstants() {
     Map<String, Map<String, String>> map = MapBuilder.of(
-        "newStatusValue", MapBuilder.of("registrationName", "newStatusValue")
+        "onStatusChange", MapBuilder.of("registrationName", "onStatusChange")
     );
     return map;
   }
@@ -91,9 +90,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     Display display = wm.getDefaultDisplay();
     Point size = new Point();
     display.getSize(size);
-    float anchor = convertPxToDp(appContext, anchorSize);
-    float height = convertPxToDp(appContext, size.y);
-    view.setAnchorPoint(1 - (anchor / height));
+    view.setAnchorPoint(1 - (toPixels(anchorSize) / (float) size.y));
   }
 
   @Override
@@ -114,12 +111,6 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     return MapBuilder.of("setStatus", CHANGE_STATUS_BOTTOM_SHEET);
   }
 
-  /***
-   *
-   * @param parent
-   * @param child
-   * @param index
-   */
   @Override
   public void addView(CoordAirMapView parent, View child, int index) {
 
@@ -144,18 +135,46 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
   }
 
+  @Override
+  public void removeViewAt(CoordAirMapView parent, int index) {
+    switch (index) {
+      case 0: {
+        ViewGroup view = parent.findViewById(R.id.replaceMap);
+        view.removeAllViews();
+      }
+      break;
+      case 1: {
+        ViewGroup view = parent.findViewById(R.id.replaceSheet);
+        view.removeAllViews();
+      }
+      break;
+      case 2: {
+        ViewGroup view = parent.findViewById(R.id.replaceHeader);
+        view.removeAllViews();
+      }
+      break;
+    }
+  }
+
+  @Override
+  public void removeView(CoordAirMapView parent, View view) {
+    super.removeView(parent, view);
+  }
+
   private void findAirMapView(CoordAirMapView parent, View child) {
     if (child instanceof AirMapView) {
-      parent.setAirMapView((AirMapView) child);
-    } else if (child instanceof ViewGroup) {
+      AirMapView map =  (AirMapView) child;
+      parent.setAirMapView(map);
+    }
+    if (child instanceof ViewGroup) {
       for (int i = 0; i < ((ViewGroup) child).getChildCount(); i++) {
         findAirMapView(parent, ((ViewGroup) child).getChildAt(i));
       }
     }
   }
 
-
-  public float convertPxToDp(Context context, float px) {
-    return (px / context.getResources().getDisplayMetrics().density);
+  int toPixels(float dp) {
+    return (int)(dp * appContext.getResources().getDisplayMetrics().density + 0.5f);
   }
+
 }

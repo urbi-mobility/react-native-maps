@@ -41,11 +41,11 @@ public class CoordAirMapView extends LinearLayout {
         } else if (BottomSheetBehavior.STATE_EXPANDED == newState) {
           floatingActionButton.animate().scaleX(0).scaleY(0).setDuration(300).start();
         }
-//        //Send Event to Javascript
-        if (CoordAirMapManager.stateConvert.containsKey(newState)) {
+        // send Event to JS, but don't send DRAGGING for now (we don't need it and the callback might slow us down)
+        if (CoordAirMapManager.stateConvert.containsKey(newState) && newState != AnchorSheetBehavior.STATE_DRAGGING) {
           WritableMap event = new WritableNativeMap();
           event.putString("status", CoordAirMapManager.stateConvert.get(newState));
-          manager.pushEvent((ThemedReactContext) getContext(), coordAirMapView, "newStatusValue", event);
+          manager.pushEvent((ThemedReactContext) getContext(), coordAirMapView, "onStatusChange", event);
         }
       }
 
@@ -62,7 +62,7 @@ public class CoordAirMapView extends LinearLayout {
   }
 
   public void setPeekHeightFirstView(final int peekHeight) {
-    mainBottomSheetBehavior.setPeekHeight(peekHeight);
+    mainBottomSheetBehavior.setPeekHeight(manager.toPixels(peekHeight));
   }
 
   public void setAnchorPoint(final float anchorPoint) {

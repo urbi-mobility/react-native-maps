@@ -72,6 +72,7 @@ class Urbi extends React.Component {
       markers: [],
       selected: null,
       city: 'berlin',
+      showHeader: true,
     };
     this.coordinator = React.createRef();
     this.map = React.createRef();
@@ -80,17 +81,16 @@ class Urbi extends React.Component {
     this.onMapReady = this.onMapReady.bind(this);
     this.onMarkerPress = this.onMarkerPress.bind(this);
     this.generateMarker = this.generateMarker.bind(this);
-    this.onRegionChange = this.onRegionChange.bind(this);
     this.onCityChange = this.onCityChange.bind(this);
     this.onCenterPress = this.onCenterPress.bind(this);
+    this.onToggleHeaderPress = this.onToggleHeaderPress.bind(this);
     this.onFilterPress = this.onFilterPress.bind(this);
-    this.newStatusValue = this.newStatusValue.bind(this);
+    this.onStatusChange = this.onStatusChange.bind(this);
     this.onTest = this.onTest.bind(this);
   }
 
   onMapReady() {
     setTimeout(() => {
-      ToastAndroid.show('updating pins', ToastAndroid.SHORT);
       const firstVehicle = vehicleLists[this.state.city].vehicles[0];
       this.setState({
         markers: [
@@ -113,8 +113,11 @@ class Urbi extends React.Component {
     this.setState({ selected: null });
   }
 
-  newStatusValue(e) {
-    alert(JSON.stringify(e));
+  onStatusChange(e) {
+    ToastAndroid.show(
+      `new status: ${e.nativeEvent.status}`,
+      ToastAndroid.SHORT
+    );
   }
 
   onMarkerPress(key) {
@@ -133,12 +136,12 @@ class Urbi extends React.Component {
     }
   }
 
-  onRegionChange(region) {
-    const maxDelta = Math.max(region.latitudeDelta, region.longitudeDelta);
-  }
-
   onCenterPress() {
     this.map.current.centerToUserLocation();
+  }
+
+  onToggleHeaderPress() {
+    this.setState({ showHeader: !this.state.showHeader });
   }
 
   onFilterPress() {
@@ -158,10 +161,9 @@ class Urbi extends React.Component {
         <CoordinatorView
           ref={this.coordinator}
           style={{ flex: 1, width: '100%' }}
-          peekHeight={300}
-          anchorPoint={700}
-          newStatusValue={this.newStatusValue}
-          bottomSheetStatus={BOTTOM_SHEET_TYPES.ANCHOR}
+          peekHeight={100}
+          anchorPoint={200}
+          onStatusChange={this.onStatusChange}
         >
           <MapView
             ref={this.map}
@@ -174,7 +176,6 @@ class Urbi extends React.Component {
             centerOffsetY={200}
             switchToCityPinsDelta={SWITCH_TO_PINS_LAT_LON_DELTA}
             showsMyLocationButton={false}
-            onRegionChangeComplete={this.onRegionChange}
             cityPins={cityPins}
             onCityPress={this.onCityPress}
             onCityChange={this.onCityChange}
@@ -183,66 +184,75 @@ class Urbi extends React.Component {
             {this.state.markers.map(this.generateMarker)}
           </MapView>
 
-          <NestedScrollView>
+          {this.state.selected ? (
+            <View style={styles.bottomPanel}>
+              <Text style={styles.text}>Selected: {this.state.selected}</Text>
+            </View>
+          ) : (
+            <NestedScrollView>
+              <Text
+                style={{
+                  backgroundColor: 'red',
+                  height: 100,
+                  textAlign: 'center',
+                }}
+              >
+                TESTO 1
+              </Text>
+              <Text
+                style={{
+                  backgroundColor: 'red',
+                  height: 100,
+                  textAlign: 'center',
+                }}
+              >
+                TESTO 1
+              </Text>
+              <FlatList
+                data={[
+                  { key: 'Devin' },
+                  { key: 'Jackson' },
+                  { key: 'James' },
+                  { key: 'Joel' },
+                  { key: 'John' },
+                  { key: 'Jillian' },
+                  { key: 'Jimmy' },
+                  { key: 'Julie' },
+                  { key: 'A' },
+                  { key: 'B' },
+                  { key: 'C' },
+                  { key: 'D' },
+                  { key: 'F' },
+                  { key: 'G' },
+                  { key: 'H' },
+                  { key: 'Dq' },
+                  { key: 'Dvv' },
+                ]}
+                renderItem={({ item }) => (
+                  <Text style={styles.item}>{item.key}</Text>
+                )}
+              />
+            </NestedScrollView>
+          )}
+          {this.state.showHeader && (
             <Text
               style={{
-                backgroundColor: 'red',
-                height: 100,
+                backgroundColor: '#2e5263',
+                padding: 20,
                 textAlign: 'center',
+                color: 'white',
               }}
             >
-              TESTO 1
+              header
             </Text>
-            <Text
-              style={{
-                backgroundColor: 'red',
-                height: 100,
-                textAlign: 'center',
-              }}
-            >
-              TESTO 1
-            </Text>
-            <FlatList
-              data={[
-                { key: 'Devin' },
-                { key: 'Jackson' },
-                { key: 'James' },
-                { key: 'Joel' },
-                { key: 'John' },
-                { key: 'Jillian' },
-                { key: 'Jimmy' },
-                { key: 'Julie' },
-                { key: 'A' },
-                { key: 'B' },
-                { key: 'C' },
-                { key: 'D' },
-                { key: 'F' },
-                { key: 'G' },
-                { key: 'H' },
-                { key: 'Dq' },
-                { key: 'Dvv' },
-              ]}
-              renderItem={({ item }) => (
-                <Text style={styles.item}>{item.key}</Text>
-              )}
-            />
-          </NestedScrollView>
-          <Text
-            style={{
-              backgroundColor: 'blue',
-              padding: 20,
-              textAlign: 'center',
-            }}
-          >
-            TESTO 2
-          </Text>
+          )}
         </CoordinatorView>
-        <View style={styles.locationButton}>
+        <View style={styles.toggleHeaderButton}>
           <TouchableHighlight
             style={styles.centerButton}
-            onPress={this.onCenterPress}
+            onPress={this.onToggleHeaderPress}
           >
-            <Text style={styles.locationButtonText}>center</Text>
+            <Text style={styles.locationButtonText}>toggle header</Text>
           </TouchableHighlight>
         </View>
         <View style={styles.filterButton}>
@@ -253,7 +263,7 @@ class Urbi extends React.Component {
             <Text style={styles.locationButtonText}>filter</Text>
           </TouchableHighlight>
         </View>
-        <View style={styles.thirthButton}>
+        <View style={styles.thirdButton}>
           <View style={styles.childRowContainer}>
             <TouchableHighlight
               style={styles.centerButtonMargin}
@@ -270,7 +280,7 @@ class Urbi extends React.Component {
                 this.onTest(BOTTOM_SHEET_TYPES.COLLAPSED);
               }}
             >
-              <Text style={styles.locationButtonText}>COLLAPSED</Text>
+              <Text style={styles.locationButtonText}>COLLAPSE</Text>
             </TouchableHighlight>
             <TouchableHighlight
               style={styles.centerButtonMargin}
@@ -282,11 +292,6 @@ class Urbi extends React.Component {
             </TouchableHighlight>
           </View>
         </View>
-        {this.state.selected && (
-          <View style={styles.bottomPanel}>
-            <Text style={styles.text}>Selected: {this.state.selected}</Text>
-          </View>
-        )}
       </View>
     );
   }
@@ -311,7 +316,6 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: 'green',
   },
-
   childRowContainer: {
     flexDirection: 'row',
     flex: 1,
@@ -319,8 +323,7 @@ const styles = StyleSheet.create({
   },
   bottomPanel: {
     backgroundColor: '#ffffff',
-    height: 200,
-    alignSelf: 'stretch',
+    minHeight: 500,
   },
   item: {
     padding: 10,
@@ -328,14 +331,14 @@ const styles = StyleSheet.create({
     height: 44,
     backgroundColor: 'blue',
   },
-  locationButton: {
+  toggleHeaderButton: {
     position: 'absolute',
     top: 20,
     right: 20,
     height: 50,
-    width: 50,
+    width: 120,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     borderRadius: 10,
   },
   filterButton: {
@@ -345,10 +348,10 @@ const styles = StyleSheet.create({
     height: 50,
     width: 50,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     borderRadius: 10,
   },
-  thirthButton: {
+  thirdButton: {
     position: 'absolute',
     top: 120,
     right: 0,

@@ -185,12 +185,12 @@ declare module "react-native-maps" {
 
     type MapTypes = 'standard' | 'satellite' | 'hybrid' | 'terrain' | 'none' | 'mutedStandard';
 
-    export type BottomPanelStatus = 'EXPAND' | 'HIDE' | 'COLLAPSED' | 'ANCHOR' | 'DRAGGING';
+    export type BottomPanelStatus = 'EXPAND' | 'HIDE' | 'COLLAPSED' | 'ANCHOR';
 
     export interface CoordinatorViewProps extends ViewProperties {
         peekHeight: number;
         anchorPoint: number;
-        onStatusChanged?: (newStatus: BottomPanelStatus) => void;
+        onStatusChange?: (changeEvent: NativeSyntheticEvent<{ newStatus: BottomPanelStatus }>) => void;
     }
 
     export interface MapViewProps extends ViewProperties {
