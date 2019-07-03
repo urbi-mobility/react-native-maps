@@ -60,6 +60,15 @@ public class CoordAirMapView extends LinearLayout {
     });
   }
 
+
+  public void manuallyLayoutChildren(View child, int y) {
+    child.measure(MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY),
+        MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
+
+    child.layout(0, y, child.getMeasuredWidth(), child.getMeasuredHeight());
+
+  }
+
   public void setPeekHeightFirstView(final int peekHeight) {
     mainBottomSheetBehavior.setPeekHeight(manager.toPixels(peekHeight));
   }

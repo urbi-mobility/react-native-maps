@@ -2,11 +2,12 @@ package com.airbnb.android.react.maps;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
+
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
@@ -17,11 +18,12 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
@@ -29,6 +31,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   private final ReactApplicationContext appContext;
 
   private final int CHANGE_STATUS_BOTTOM_SHEET = 1;
+  private final int SHOW_HIDE_HEADER = 2;
   private final AtomicInteger viewCount = new AtomicInteger();
   private final static String EXPAND = "EXPAND";
   private final static String COLLAPSED = "COLLAPSED";
@@ -95,6 +98,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     view.setAnchorPoint(1 - (toPixels(anchorSize) / (float) size.y));
   }
 
+
   @Override
   public void receiveCommand(@Nonnull CoordAirMapView root, int commandId, @Nullable ReadableArray args) {
     switch (commandId) {
@@ -104,13 +108,26 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
           root.setBottomSheetStatus(inverseStateConvert.get(key));
         }
         break;
+      case SHOW_HIDE_HEADER:
+        if (args != null && args.size() > 0) {
+          boolean value = args.getBoolean(0);
+          FrameLayout viewGroup = root.findViewById(R.id.replaceHeader);
+          if (value) {
+            viewGroup.setVisibility(View.VISIBLE);
+            root.manuallyLayoutChildren(root.findViewById(R.id.coordinatorLayout), viewGroup.getHeight());
+          } else {
+            viewGroup.setVisibility(View.GONE);
+            root.manuallyLayoutChildren(root.findViewById(R.id.coordinatorLayout), 0);
+          }
+        }
+        break;
     }
   }
 
   @Nullable
   @Override
   public Map<String, Integer> getCommandsMap() {
-    return MapBuilder.of("setStatus", CHANGE_STATUS_BOTTOM_SHEET);
+    return MapBuilder.of("setStatus", CHANGE_STATUS_BOTTOM_SHEET, "showHeader", SHOW_HIDE_HEADER);
   }
 
   @Override
@@ -174,7 +191,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
   private void findAirMapView(CoordAirMapView parent, View child) {
     if (child instanceof AirMapView) {
-      AirMapView map =  (AirMapView) child;
+      AirMapView map = (AirMapView) child;
       parent.setAirMapView(map);
     }
     if (child instanceof ViewGroup) {
@@ -185,7 +202,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   }
 
   int toPixels(float dp) {
-    return (int)(dp * appContext.getResources().getDisplayMetrics().density + 0.5f);
+    return (int) (dp * appContext.getResources().getDisplayMetrics().density + 0.5f);
   }
 
 }

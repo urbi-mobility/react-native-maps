@@ -136,6 +136,7 @@ class Urbi extends React.Component {
 
   onToggleHeaderPress() {
     this.setState({ showHeader: !this.state.showHeader });
+    this.coordinator.current.setShowHeader(!this.state.showHeader)
   }
 
   onFilterPress() {
@@ -231,7 +232,6 @@ class Urbi extends React.Component {
             )}
           </NestedScrollView>
           <View>
-            {this.state.showHeader ? (
               <Text
                 style={{
                   backgroundColor: '#2e5263',
@@ -240,9 +240,8 @@ class Urbi extends React.Component {
                   color: 'white',
                 }}
               >
-                header
+                  header
               </Text>
-            ) : <View />}
           </View>
         </CoordinatorView>
         <View style={styles.toggleHeaderButton}>
