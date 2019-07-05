@@ -38,7 +38,6 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   // urbi-specific
   private static final int CENTER_TO_USER_LOCATION = 666;
 
-
   private final Map<String, Integer> MAP_TYPES = MapBuilder.of(
       "standard", GoogleMap.MAP_TYPE_NORMAL,
       "satellite", GoogleMap.MAP_TYPE_SATELLITE,
@@ -129,7 +128,7 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   }
 
   @ReactProp(name = "mapPadding")
-  public void setMapPadding(AirMapView view, @Nullable ReadableMap padding) {
+  public void setMapPadding(final AirMapView view, @Nullable ReadableMap padding) {
     int left = 0;
     int top = 0;
     int right = 0;
@@ -155,6 +154,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     }
 
     view.map.setPadding(left, top, right, bottom);
+    if (view.paddingListener != null)
+      view.paddingListener.run();
   }
 
   @ReactProp(name = "showsUserLocation", defaultBoolean = false)

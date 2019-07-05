@@ -189,10 +189,16 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     viewCount.decrementAndGet();
   }
 
-  private void findAirMapView(CoordAirMapView parent, View child) {
+  private void findAirMapView(final CoordAirMapView parent, View child) {
     if (child instanceof AirMapView) {
-      AirMapView map = (AirMapView) child;
+      final AirMapView map = (AirMapView) child;
       parent.setAirMapView(map);
+      map.setPaddingListener(new Runnable() {
+        @Override
+        public void run() {
+          parent.manuallyLayoutChildren(parent.findViewById(R.id.coordinatorLayout), 0);
+        }
+      });
     }
     if (child instanceof ViewGroup) {
       for (int i = 0; i < ((ViewGroup) child).getChildCount(); i++) {
