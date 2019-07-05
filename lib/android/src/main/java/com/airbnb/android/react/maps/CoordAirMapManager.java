@@ -2,11 +2,14 @@ package com.airbnb.android.react.maps;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.support.design.widget.CoordinatorLayout;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -131,7 +134,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   }
 
   @Override
-  public void addView(CoordAirMapView parent, View child, int index) {
+  public void addView(CoordAirMapView parent, final View child, int index) {
 
     viewCount.incrementAndGet();
 
@@ -143,15 +146,48 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       }
       break;
       case 1: {
-        ViewGroup view = parent.findViewById(R.id.replaceSheet);
+        final FrameLayout view = parent.findViewById(R.id.replaceSheet);
+        final CoordAirMapView parentFinal=parent;
         view.addView(child);
+        if(child instanceof ViewGroup) {
+          final ViewGroup finalChild = (ViewGroup) child;
+          view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+              if (finalChild.getHeight() != 0) {
+                finalChild.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                int height = 0;
+                for (int i = 0; i < finalChild.getChildCount(); i++) {
+                  height += finalChild.getChildAt(i).getHeight();
+                }
+                setHeightSheet(parentFinal,view, height);
+              }
+            }
+          });
+        }
       }
       break;
       case 2: {
-        ViewGroup view = parent.findViewById(R.id.replaceHeader);
+        final ViewGroup view = parent.findViewById(R.id.replaceHeader);
+        view.setVisibility(View.VISIBLE);
         view.addView(child);
       }
       break;
+    }
+
+  }
+
+  private void setHeightSheet(CoordAirMapView parent,FrameLayout view,int height){
+    CoordinatorLayout.LayoutParams param = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
+    param.height=height;
+    view.setLayoutParams(param);
+    View coordinator=parent.findViewById(R.id.coordinatorLayout);
+    View headerView = parent.findViewById(R.id.replaceHeader);
+    if(headerView.getVisibility()==View.VISIBLE)
+      parent.manuallyLayoutChildren(coordinator, headerView.getHeight());
+    else {
+      parent.manuallyLayoutChildren(coordinator, 0);
+
     }
 
   }
@@ -182,6 +218,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       break;
       case 2: {
         ViewGroup view = parent.findViewById(R.id.replaceHeader);
+        view.setVisibility(View.GONE);
         view.removeAllViews();
       }
       break;
