@@ -40,6 +40,12 @@ const cityPins = cityList.cities.map(c => ({
   bounds: { topLeft: c.topLeft, bottomRight: c.bottomRight },
 }));
 
+const offsets = {
+  ANCHOR: 200,
+  COLLAPSED: 100,
+  EXPAND: 200,
+};
+
 class Urbi extends React.Component {
   generateMarker = v => (
     <Marker
@@ -67,6 +73,7 @@ class Urbi extends React.Component {
       selected: null,
       city: 'berlin',
       showHeader: true,
+      bottomOffset: offsets.ANCHOR,
     };
     this.coordinator = React.createRef();
     this.map = React.createRef();
@@ -101,6 +108,7 @@ class Urbi extends React.Component {
       `new status: ${e.nativeEvent.status}`,
       ToastAndroid.SHORT
     );
+    this.setState({ bottomOffset: offsets[e.nativeEvent.status] });
   }
 
   onMarkerPress(key) {
@@ -145,8 +153,8 @@ class Urbi extends React.Component {
         <CoordinatorView
           ref={this.coordinator}
           style={{ flex: 1, width: '100%' }}
-          peekHeight={100}
-          anchorPoint={200}
+          peekHeight={offsets.COLLAPSED}
+          anchorPoint={offsets.ANCHOR}
           onStatusChange={this.onStatusChange}
         >
           <MapView
@@ -157,7 +165,7 @@ class Urbi extends React.Component {
             onPress={this.onMapPress}
             onMapReady={this.onMapReady}
             moveOnMarkerPress={false}
-            centerOffsetY={200}
+            mapPadding={{ bottom: this.state.bottomOffset }}
             switchToCityPinsDelta={SWITCH_TO_PINS_LAT_LON_DELTA}
             showsMyLocationButton={false}
             cityPins={cityPins}
