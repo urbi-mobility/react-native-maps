@@ -43,7 +43,7 @@ const cityPins = cityList.cities.map(c => ({
 class Urbi extends React.Component {
   generateMarker = v => (
     <Marker
-      key={`${v.provider}-${v.id}`}
+      key={v.id}
       centerOffset={{ x: 0, y: -19.5 }}
       coordinate={{ latitude: v.location.lat, longitude: v.location.lon }}
       image={pins[`ic_pin_${v.provider}`]}
@@ -85,22 +85,11 @@ class Urbi extends React.Component {
 
   onMapReady() {
     setTimeout(() => {
-      const firstVehicle = vehicleLists[this.state.city].vehicles[0];
-      this.setState({
-        markers: [
-          ...this.state.markers,
-          {
-            ...firstVehicle,
-            id: `rando-${Math.random()}`,
-            location: {
-              ...firstVehicle.location,
-              lat: firstVehicle.location.lat + 0.05 * Math.random(),
-            },
-          },
-        ],
-      });
-      this.onMapReady();
-    }, 10000);
+      const marker = this.state.markers.find(m => m.provider === 'emio' && m.id === '1108');
+      marker.provider = 'drivenow';
+      this.setState({ markers: [...this.state.markers], flippedPin: true });
+      ToastAndroid.show('switched emio 1108 to drivenow', ToastAndroid.SHORT);
+    }, 8000);
   }
 
   onMapPress() {

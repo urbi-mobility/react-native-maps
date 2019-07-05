@@ -65,6 +65,8 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
       this.markers.put(marker, true);
       if (this.iconBitmapDescriptor != null) {
         marker.setIconBitmapDescriptor(this.iconBitmapDescriptor, this.bitmap);
+        marker.setOriginalBitmapDescriptor(this.iconBitmapDescriptor);
+        marker.setOriginalIconBitmap(this.bitmap);
       }
     }
 

@@ -407,6 +407,16 @@ public class AirMapMarker extends AirMapFeature {
     this.iconBitmap = bitmap;
   }
 
+  public AirMapMarker setOriginalBitmapDescriptor(BitmapDescriptor originalBitmapDescriptor) {
+    this.originalBitmapDescriptor = originalBitmapDescriptor;
+    return this;
+  }
+
+  public AirMapMarker setOriginalIconBitmap(Bitmap originalIconBitmap) {
+    this.originalIconBitmap = originalIconBitmap;
+    return this;
+  }
+
   public MarkerOptions getMarkerOptions() {
     if (markerOptions == null) {
       markerOptions = new MarkerOptions();
