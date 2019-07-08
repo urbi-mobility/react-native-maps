@@ -156,6 +156,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     view.map.setPadding(left, top, right, bottom);
     if (view.paddingListener != null)
       view.paddingListener.run();
+    else
+        view.manuallyLayoutChildren(view);
   }
 
   @ReactProp(name = "showsUserLocation", defaultBoolean = false)

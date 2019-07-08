@@ -1506,4 +1506,12 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   public void setPaddingListener(Runnable listener) {
     this.paddingListener = listener;
   }
+
+  public void manuallyLayoutChildren(View child) {
+    child.measure(MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY),
+        MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
+
+    child.layout(0, 0, child.getMeasuredWidth(), child.getMeasuredHeight());
+
+  }
 }
