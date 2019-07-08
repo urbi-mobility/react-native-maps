@@ -41,7 +41,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   private final static String HIDE = "HIDE";
   private final static String ANCHOR = "ANCHOR";
   private final static String DRAGGING = "DRAGGING";
-
+  private final int offSet = 51;
   public final static Map<Integer, String> stateConvert = new HashMap<Integer, String>() {{
     put(AnchorSheetBehavior.STATE_ANCHOR, ANCHOR);
     put(AnchorSheetBehavior.STATE_COLLAPSED, COLLAPSED);
@@ -147,9 +147,9 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       break;
       case 1: {
         final FrameLayout view = parent.findViewById(R.id.replaceSheet);
-        final CoordAirMapView parentFinal=parent;
+        final CoordAirMapView parentFinal = parent;
         view.addView(child);
-        if(child instanceof ViewGroup) {
+        if (child instanceof ViewGroup) {
           final ViewGroup finalChild = (ViewGroup) child;
           view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -160,7 +160,8 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
                 for (int i = 0; i < finalChild.getChildCount(); i++) {
                   height += finalChild.getChildAt(i).getHeight();
                 }
-                setHeightSheet(parentFinal,view, height);
+                if(parentFinal.getHeight() - height > offSet)
+                  setHeightSheet(parentFinal, view, height);
               }
             }
           });
@@ -177,17 +178,16 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
   }
 
-  private void setHeightSheet(CoordAirMapView parent,FrameLayout view,int height){
+  private void setHeightSheet(CoordAirMapView parent, FrameLayout view, int height) {
     CoordinatorLayout.LayoutParams param = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
-    param.height=height;
+    param.height = height;
     view.setLayoutParams(param);
-    View coordinator=parent.findViewById(R.id.coordinatorLayout);
+    View coordinator = parent.findViewById(R.id.coordinatorLayout);
     View headerView = parent.findViewById(R.id.replaceHeader);
-    if(headerView.getVisibility()==View.VISIBLE)
+    if (headerView.getVisibility() == View.VISIBLE)
       parent.manuallyLayoutChildren(coordinator, headerView.getHeight());
     else {
       parent.manuallyLayoutChildren(coordinator, 0);
-
     }
 
   }
