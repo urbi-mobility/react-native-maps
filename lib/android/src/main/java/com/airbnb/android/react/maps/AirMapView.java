@@ -99,7 +99,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private AirMapCity lastCity;
   private AirMapCity lastCityWithMarkers;
   private boolean showingProviderMarkers;
-  AirMapListner arAirMapListner;
+  AirMapPaddingListener paddingListener;
   /**
    * end of urbi-specific fields
    */
@@ -1503,8 +1503,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     return airMarker;
   }
 
-  public void setArAirMapListner(AirMapListner listener) {
-    this.arAirMapListner = listener;
+  public void setPaddingListener(AirMapPaddingListener listener) {
+    this.paddingListener = listener;
   }
 
   public void manuallyLayoutChildren(View child) {
@@ -1515,9 +1515,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
   }
 
-  interface AirMapListner {
+  interface AirMapPaddingListener {
     void setPaddingListener();
 
-    int getHeightTop();
+    int getTopHeight();
   }
 }

@@ -153,13 +153,13 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
       if (padding.hasKey("bottom")) {
         bottom = (int) (padding.getDouble("bottom") * density);
       }
-      if (view.arAirMapListner != null)
-        bottom += view.arAirMapListner.getHeightTop();
+      if (view.paddingListener != null)
+        bottom += view.paddingListener.getTopHeight();
     }
 
     view.map.setPadding(left, top, right, bottom);
-    if (view.arAirMapListner != null)
-      view.arAirMapListner.setPaddingListener();
+    if (view.paddingListener != null)
+      view.paddingListener.setPaddingListener();
     else
       view.manuallyLayoutChildren(view);
   }
