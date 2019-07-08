@@ -3,6 +3,7 @@ package com.airbnb.android.react.maps;
 import android.content.Context;
 import android.graphics.Point;
 import android.support.design.widget.CoordinatorLayout;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
   private final int CHANGE_STATUS_BOTTOM_SHEET = 1;
   private final int SHOW_HIDE_HEADER = 2;
+  private final int SET_HEIGHT_SHEET = 3;
   private final AtomicInteger viewCount = new AtomicInteger();
   private final static String EXPAND = "EXPAND";
   private final static String COLLAPSED = "COLLAPSED";
@@ -128,6 +130,13 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
             root.manuallyLayoutChildren(root.findViewById(R.id.coordinatorLayout), 0);
           }
         }
+      case SET_HEIGHT_SHEET:
+        if (args != null && args.size() > 0) {
+          double height = args.getDouble(0);
+          final FrameLayout view = root.findViewById(R.id.replaceSheet);
+          Log.e("Height",""+view.getHeight());
+          setSheetHeight(root,view, (int) height);
+        }
         break;
     }
   }
@@ -135,7 +144,8 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   @Nullable
   @Override
   public Map<String, Integer> getCommandsMap() {
-    return MapBuilder.of("setStatus", CHANGE_STATUS_BOTTOM_SHEET, "showHeader", SHOW_HIDE_HEADER);
+    return MapBuilder.of("setStatus", CHANGE_STATUS_BOTTOM_SHEET,
+        "showHeader", SHOW_HIDE_HEADER,"setHeightSheet", SET_HEIGHT_SHEET);
   }
 
   @Override
@@ -169,6 +179,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
                 // view's height. It looks like Android tries to render as many child views as can fit the screen, but
                 // it comes short of VIEW_HEIGHT_OFFSET px (found empirically). Because of that, some empty transparent
                 // pixels are left at the top of the screen, which we really don't want
+                Log.e("FFFFF",""+height);
                 if (parentFinal.getHeight() - height > VIEW_HEIGHT_OFFSET)
                   setSheetHeight(parentFinal, view, height);
               }
