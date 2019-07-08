@@ -246,11 +246,6 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     view.setMoveOnMarkerPress(moveOnPress);
   }
 
-  @ReactProp(name = "centerOffsetY")
-  public void setCenterOffsetY(AirMapView view, float centerOffsetY) {
-    view.setMapCenterOffsetY(centerOffsetY);
-  }
-
   @ReactProp(name = "loadingBackgroundColor", customType = "Color")
   public void setLoadingBackgroundColor(AirMapView view, @Nullable Integer loadingBackgroundColor) {
     view.setLoadingBackgroundColor(loadingBackgroundColor);
