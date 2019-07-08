@@ -73,6 +73,7 @@ class Urbi extends React.Component {
       selected: null,
       city: 'berlin',
       showHeader: true,
+      heightHeader: 0,
       bottomOffset: offsets.ANCHOR,
     };
     this.coordinator = React.createRef();
@@ -88,6 +89,8 @@ class Urbi extends React.Component {
     this.onFilterPress = this.onFilterPress.bind(this);
     this.onStatusChange = this.onStatusChange.bind(this);
     this.onTest = this.onTest.bind(this);
+    this.findDimesions= this.findDimesions.bind(this);
+
   }
 
   onMapReady() {
@@ -147,6 +150,11 @@ class Urbi extends React.Component {
     this.coordinator.current.setStatus(value);
   }
 
+  findDimesions(layout){
+    const {x, y, width, height} = layout;
+    this.setState({heightHeader :height})
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -165,7 +173,7 @@ class Urbi extends React.Component {
             onPress={this.onMapPress}
             onMapReady={this.onMapReady}
             moveOnMarkerPress={false}
-            mapPadding={{ bottom: this.state.bottomOffset }}
+            mapPadding={{ bottom: (this.state.bottomOffset + this.state.heightHeader)}}
             switchToCityPinsDelta={SWITCH_TO_PINS_LAT_LON_DELTA}
             showsMyLocationButton={false}
             cityPins={cityPins}
@@ -228,7 +236,7 @@ class Urbi extends React.Component {
               </View>
             )}
           </NestedScrollView>
-          <View>
+          <View onLayout={(event) => { this.findDimesions(event.nativeEvent.layout) }}>
               <Text
                 style={{
                   backgroundColor: '#2e5263',

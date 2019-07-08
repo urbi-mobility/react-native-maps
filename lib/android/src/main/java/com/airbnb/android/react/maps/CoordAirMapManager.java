@@ -191,6 +191,10 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     CoordinatorLayout.LayoutParams param = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
     param.height = height;
     view.setLayoutParams(param);
+    applyManuallyLayoutChildren(parent);
+  }
+
+  private void applyManuallyLayoutChildren(CoordAirMapView parent) {
     View coordinator = parent.findViewById(R.id.coordinatorLayout);
     View headerView = parent.findViewById(R.id.replaceHeader);
     if (headerView.getVisibility() == View.VISIBLE)
@@ -198,8 +202,8 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     else {
       parent.manuallyLayoutChildren(coordinator, 0);
     }
-
   }
+
 
   @Override
   public void removeAllViews(CoordAirMapView parent) {
@@ -242,7 +246,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       map.setPaddingListener(new Runnable() {
         @Override
         public void run() {
-          parent.manuallyLayoutChildren(parent.findViewById(R.id.coordinatorLayout), 0);
+          applyManuallyLayoutChildren(parent);
         }
       });
     }
