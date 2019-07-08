@@ -231,18 +231,18 @@ class Urbi extends React.Component {
               </View>
             )}
           </NestedScrollView>
-          {/*<View>*/}
-              {/*<Text*/}
-                {/*style={{*/}
-                  {/*backgroundColor: '#2e5263',*/}
-                  {/*padding: 20,*/}
-                  {/*textAlign: 'center',*/}
-                  {/*color: 'white',*/}
-                {/*}}*/}
-              {/*>*/}
-                  {/*header*/}
-              {/*</Text>*/}
-          {/*</View>*/}
+          <View>
+              <Text
+                style={{
+                  backgroundColor: '#2e5263',
+                  padding: 20,
+                  textAlign: 'center',
+                  color: 'white',
+                }}
+              >
+                  header
+              </Text>
+          </View>
         </CoordinatorView>
         <View style={styles.toggleHeaderButton}>
           <TouchableHighlight
