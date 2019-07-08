@@ -134,8 +134,8 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
         if (args != null && args.size() > 0) {
           double height = args.getDouble(0);
           final FrameLayout view = root.findViewById(R.id.replaceSheet);
-          Log.e("Height",""+view.getHeight());
-          setSheetHeight(root,view, (int) height);
+          Log.e("Height", "" + view.getHeight());
+          setSheetHeight(root, view, (int) height);
         }
         break;
     }
@@ -145,7 +145,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   @Override
   public Map<String, Integer> getCommandsMap() {
     return MapBuilder.of("setStatus", CHANGE_STATUS_BOTTOM_SHEET,
-        "showHeader", SHOW_HIDE_HEADER,"setHeightSheet", SET_HEIGHT_SHEET);
+        "showHeader", SHOW_HIDE_HEADER, "setHeightSheet", SET_HEIGHT_SHEET);
   }
 
   @Override
@@ -179,7 +179,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
                 // view's height. It looks like Android tries to render as many child views as can fit the screen, but
                 // it comes short of VIEW_HEIGHT_OFFSET px (found empirically). Because of that, some empty transparent
                 // pixels are left at the top of the screen, which we really don't want
-                Log.e("FFFFF",""+height);
+                Log.e("FFFFF", "" + height);
                 if (parentFinal.getHeight() - height > VIEW_HEIGHT_OFFSET)
                   setSheetHeight(parentFinal, view, height);
               }
