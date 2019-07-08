@@ -243,16 +243,21 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     if (child instanceof AirMapView) {
       final AirMapView map = (AirMapView) child;
       parent.setAirMapView(map);
-      map.setPaddingListener(new Runnable() {
+      map.setArAirMapListner(new AirMapView.AirMapListner() {
         @Override
-        public void run() {
+        public void setPaddingListener() {
           applyManuallyLayoutChildren(parent);
         }
+
+        @Override
+        public int getHeightTop() {
+          return parent.findViewById(R.id.replaceHeader).getHeight();
+        }
       });
-    }
-    if (child instanceof ViewGroup) {
-      for (int i = 0; i < ((ViewGroup) child).getChildCount(); i++) {
-        findAirMapView(parent, ((ViewGroup) child).getChildAt(i));
+      if (child instanceof ViewGroup) {
+        for (int i = 0; i < ((ViewGroup) child).getChildCount(); i++) {
+          findAirMapView(parent, ((ViewGroup) child).getChildAt(i));
+        }
       }
     }
   }

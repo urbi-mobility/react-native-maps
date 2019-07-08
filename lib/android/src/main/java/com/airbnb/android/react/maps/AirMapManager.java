@@ -1,6 +1,7 @@
 package com.airbnb.android.react.maps;
 
 import android.view.View;
+
 import com.facebook.react.bridge.*;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
@@ -16,6 +17,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 
 import javax.annotation.Nullable;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -151,13 +153,15 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
       if (padding.hasKey("bottom")) {
         bottom = (int) (padding.getDouble("bottom") * density);
       }
+      if (view.arAirMapListner != null)
+        bottom += view.arAirMapListner.getHeightTop();
     }
 
     view.map.setPadding(left, top, right, bottom);
-    if (view.paddingListener != null)
-      view.paddingListener.run();
+    if (view.arAirMapListner != null)
+      view.arAirMapListner.setPaddingListener();
     else
-        view.manuallyLayoutChildren(view);
+      view.manuallyLayoutChildren(view);
   }
 
   @ReactProp(name = "showsUserLocation", defaultBoolean = false)
