@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -41,7 +40,13 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   private final static String HIDE = "HIDE";
   private final static String ANCHOR = "ANCHOR";
   private final static String DRAGGING = "DRAGGING";
-  private final int offSet = 51;
+
+  /*
+   * Fixes an issue with the bottom panel's calculated height.
+   * More on addView()
+   */
+  private final static int VIEW_HEIGHT_OFFSET = 51;
+
   public final static Map<Integer, String> stateConvert = new HashMap<Integer, String>() {{
     put(AnchorSheetBehavior.STATE_ANCHOR, ANCHOR);
     put(AnchorSheetBehavior.STATE_COLLAPSED, COLLAPSED);
@@ -160,8 +165,12 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
                 for (int i = 0; i < finalChild.getChildCount(); i++) {
                   height += finalChild.getChildAt(i).getHeight();
                 }
-                if(parentFinal.getHeight() - height > offSet)
-                  setHeightSheet(parentFinal, view, height);
+                // not all child views in the bottom panel are rendered, so their heights are not included in the parent
+                // view's height. It looks like Android tries to render as many child views as can fit the screen, but
+                // it comes short of VIEW_HEIGHT_OFFSET px (found empirically). Because of that, some empty transparent
+                // pixels are left at the top of the screen, which we really don't want
+                if (parentFinal.getHeight() - height > VIEW_HEIGHT_OFFSET)
+                  setSheetHeight(parentFinal, view, height);
               }
             }
           });
@@ -178,7 +187,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
   }
 
-  private void setHeightSheet(CoordAirMapView parent, FrameLayout view, int height) {
+  private void setSheetHeight(CoordAirMapView parent, FrameLayout view, int height) {
     CoordinatorLayout.LayoutParams param = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
     param.height = height;
     view.setLayoutParams(param);
