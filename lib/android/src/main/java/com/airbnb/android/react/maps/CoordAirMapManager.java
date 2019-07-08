@@ -245,7 +245,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       parent.setAirMapView(map);
       map.setPaddingListener(new AirMapView.AirMapPaddingListener() {
         @Override
-        public void setPaddingListener() {
+        public void forceLayout() {
           applyManualChildrenLayout(parent);
         }
 

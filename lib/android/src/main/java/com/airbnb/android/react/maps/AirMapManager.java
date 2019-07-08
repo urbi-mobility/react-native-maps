@@ -159,7 +159,7 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
     view.map.setPadding(left, top, right, bottom);
     if (view.paddingListener != null)
-      view.paddingListener.setPaddingListener();
+      view.paddingListener.forceLayout();
     else
       view.manuallyLayoutChildren(view);
   }

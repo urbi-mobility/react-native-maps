@@ -1516,7 +1516,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   }
 
   interface AirMapPaddingListener {
-    void setPaddingListener();
+    void forceLayout();
 
     int getTopHeight();
   }
