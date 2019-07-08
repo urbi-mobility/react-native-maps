@@ -2,9 +2,11 @@ package com.airbnb.android.react.maps;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.support.design.widget.CoordinatorLayout;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -38,6 +40,12 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   private final static String HIDE = "HIDE";
   private final static String ANCHOR = "ANCHOR";
   private final static String DRAGGING = "DRAGGING";
+
+  /*
+   * Fixes an issue with the bottom panel's calculated height.
+   * More on addView()
+   */
+  private final static int VIEW_HEIGHT_OFFSET = 51;
 
   public final static Map<Integer, String> stateConvert = new HashMap<Integer, String>() {{
     put(AnchorSheetBehavior.STATE_ANCHOR, ANCHOR);
@@ -131,7 +139,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   }
 
   @Override
-  public void addView(CoordAirMapView parent, View child, int index) {
+  public void addView(CoordAirMapView parent, final View child, int index) {
 
     viewCount.incrementAndGet();
 
@@ -143,15 +151,52 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       }
       break;
       case 1: {
-        ViewGroup view = parent.findViewById(R.id.replaceSheet);
+        final FrameLayout view = parent.findViewById(R.id.replaceSheet);
+        final CoordAirMapView parentFinal = parent;
         view.addView(child);
+        if (child instanceof ViewGroup) {
+          final ViewGroup finalChild = (ViewGroup) child;
+          view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+              if (finalChild.getHeight() != 0) {
+                finalChild.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                int height = 0;
+                for (int i = 0; i < finalChild.getChildCount(); i++) {
+                  height += finalChild.getChildAt(i).getHeight();
+                }
+                // not all child views in the bottom panel are rendered, so their heights are not included in the parent
+                // view's height. It looks like Android tries to render as many child views as can fit the screen, but
+                // it comes short of VIEW_HEIGHT_OFFSET px (found empirically). Because of that, some empty transparent
+                // pixels are left at the top of the screen, which we really don't want
+                if (parentFinal.getHeight() - height > VIEW_HEIGHT_OFFSET)
+                  setSheetHeight(parentFinal, view, height);
+              }
+            }
+          });
+        }
       }
       break;
       case 2: {
-        ViewGroup view = parent.findViewById(R.id.replaceHeader);
+        final ViewGroup view = parent.findViewById(R.id.replaceHeader);
+        view.setVisibility(View.VISIBLE);
         view.addView(child);
       }
       break;
+    }
+
+  }
+
+  private void setSheetHeight(CoordAirMapView parent, FrameLayout view, int height) {
+    CoordinatorLayout.LayoutParams param = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
+    param.height = height;
+    view.setLayoutParams(param);
+    View coordinator = parent.findViewById(R.id.coordinatorLayout);
+    View headerView = parent.findViewById(R.id.replaceHeader);
+    if (headerView.getVisibility() == View.VISIBLE)
+      parent.manuallyLayoutChildren(coordinator, headerView.getHeight());
+    else {
+      parent.manuallyLayoutChildren(coordinator, 0);
     }
 
   }
@@ -182,6 +227,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       break;
       case 2: {
         ViewGroup view = parent.findViewById(R.id.replaceHeader);
+        view.setVisibility(View.GONE);
         view.removeAllViews();
       }
       break;
