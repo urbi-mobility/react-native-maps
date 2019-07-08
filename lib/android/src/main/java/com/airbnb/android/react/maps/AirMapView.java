@@ -91,7 +91,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
    * urbi-specific fields
    */
   private static final double SELECTED_PIN_SCALE_FACTOR = 1.2;
-  private int mapCenterOffsetY = 0;
   private float switchToCityPinsDelta = Float.MAX_VALUE;
   private final Set<AirMapMarker> allMarkers = new HashSet<>();
   private final Map<LatLng, AirMapCity> cities = new HashMap<>();
@@ -99,6 +98,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private AirMapCity lastCity;
   private AirMapCity lastCityWithMarkers;
   private boolean showingProviderMarkers;
+  AirMapPaddingListener paddingListener;
   /**
    * end of urbi-specific fields
    */
@@ -344,7 +344,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
           return false;
         } else {
           marker.showInfoWindow();
-          centerCameraWithOffsetTo(marker.getPosition(), 250, null);
+          centerCameraTo(marker.getPosition(), 250, null);
           return true;
         }
       }
@@ -542,25 +542,12 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     context.addLifecycleEventListener(lifecycleListener);
   }
 
-  private LatLng getPositionWithOffset(LatLng positionWithNoOffset) {
-
-    LatLng centerTo = new LatLng(positionWithNoOffset.latitude, positionWithNoOffset.longitude);
-
-    if (Math.abs(mapCenterOffsetY) > 1) {
-      Point markerPoint = map.getProjection().toScreenLocation(centerTo);
-      markerPoint.offset(0, mapCenterOffsetY);
-      centerTo = map.getProjection().fromScreenLocation(markerPoint);
-    }
-
-    return centerTo;
-  }
-
-  private void centerCameraWithOffsetTo(final LatLng positionWithNoOffset, final int delayMs, Integer newZoomLevel) {
+  private void centerCameraTo(final LatLng position, final int delayMs, Integer newZoomLevel) {
     if (newZoomLevel != null) {
-      map.animateCamera(CameraUpdateFactory.newLatLngZoom(positionWithNoOffset, newZoomLevel));
+      map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, newZoomLevel));
     } else {
       map.animateCamera(
-          CameraUpdateFactory.newLatLng(getPositionWithOffset(positionWithNoOffset)),
+          CameraUpdateFactory.newLatLng(position),
           delayMs, null);
     }
   }
@@ -688,7 +675,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         @Override
         public void onSuccess(Location location) {
           if (location != null)
-            centerCameraWithOffsetTo(new LatLng(location.getLatitude(), location.getLongitude()), 600, 15);
+            centerCameraTo(new LatLng(location.getLatitude(), location.getLongitude()), 600, 15);
         }
       });
     }
@@ -739,10 +726,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         this.mapLoadingLayout.setBackgroundColor(this.loadingBackgroundColor);
       }
     }
-  }
-
-  public void setMapCenterOffsetY(float mapCenterOffsetY) {
-    this.mapCenterOffsetY = (int) mapCenterOffsetY;
   }
 
   public void setLoadingIndicatorColor(Integer loadingIndicatorColor) {
@@ -1500,5 +1483,23 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
 
     return airMarker;
+  }
+
+  public void setPaddingListener(AirMapPaddingListener listener) {
+    this.paddingListener = listener;
+  }
+
+  public void manuallyLayoutChildren(View child) {
+    child.measure(MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY),
+        MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
+
+    child.layout(0, 0, child.getMeasuredWidth(), child.getMeasuredHeight());
+
+  }
+
+  interface AirMapPaddingListener {
+    void forceLayout();
+
+    int getTopHeight();
   }
 }
