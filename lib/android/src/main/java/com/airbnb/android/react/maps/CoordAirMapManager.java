@@ -191,6 +191,10 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     CoordinatorLayout.LayoutParams param = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
     param.height = height;
     view.setLayoutParams(param);
+    applyManualChildrenLayout(parent);
+  }
+
+  private void applyManualChildrenLayout(CoordAirMapView parent) {
     View coordinator = parent.findViewById(R.id.coordinatorLayout);
     View headerView = parent.findViewById(R.id.replaceHeader);
     if (headerView.getVisibility() == View.VISIBLE)
@@ -198,8 +202,8 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     else {
       parent.manuallyLayoutChildren(coordinator, 0);
     }
-
   }
+
 
   @Override
   public void removeAllViews(CoordAirMapView parent) {
@@ -235,14 +239,25 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     viewCount.decrementAndGet();
   }
 
-  private void findAirMapView(CoordAirMapView parent, View child) {
+  private void findAirMapView(final CoordAirMapView parent, View child) {
     if (child instanceof AirMapView) {
-      AirMapView map = (AirMapView) child;
+      final AirMapView map = (AirMapView) child;
       parent.setAirMapView(map);
-    }
-    if (child instanceof ViewGroup) {
-      for (int i = 0; i < ((ViewGroup) child).getChildCount(); i++) {
-        findAirMapView(parent, ((ViewGroup) child).getChildAt(i));
+      map.setPaddingListener(new AirMapView.AirMapPaddingListener() {
+        @Override
+        public void forceLayout() {
+          applyManualChildrenLayout(parent);
+        }
+
+        @Override
+        public int getTopHeight() {
+          return parent.findViewById(R.id.replaceHeader).getHeight();
+        }
+      });
+      if (child instanceof ViewGroup) {
+        for (int i = 0; i < ((ViewGroup) child).getChildCount(); i++) {
+          findAirMapView(parent, ((ViewGroup) child).getChildAt(i));
+        }
       }
     }
   }
