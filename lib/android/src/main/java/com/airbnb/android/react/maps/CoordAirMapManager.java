@@ -42,7 +42,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   private final static String HIDE = "HIDE";
   private final static String ANCHOR = "ANCHOR";
   private final static String DRAGGING = "DRAGGING";
-  private float maxHeightScreen=0;
+  private float maxHeightScreen = 0;
   /*
    * Fixes an issue with the bottom panel's calculated height.
    * More on addView()
@@ -105,13 +105,13 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   }
 
 
-  private float getMaxHeightScreen(){
-    if(maxHeightScreen==0) {
+  private float getMaxHeightScreen() {
+    if (maxHeightScreen == 0) {
       WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       Point size = new Point();
       display.getSize(size);
-      maxHeightScreen =(float) size.y;
+      maxHeightScreen = (float) size.y;
     }
     return maxHeightScreen;
   }
@@ -140,9 +140,9 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       case SET_HEIGHT_SHEET:
         if (args != null && args.size() > 0) {
           double height = args.getDouble(0);
-          double heightPixel = toPixels((float) height) > getMaxHeightScreen()? getMaxHeightScreen():toPixels((float) height);
+          double heightPixel = toPixels((float) height) > getMaxHeightScreen() ? getMaxHeightScreen() : toPixels((float) height);
           final FrameLayout view = root.findViewById(R.id.replaceSheet);
-          Log.e("Height", "" + view.getHeight()+" "+height+" "+toPixels((float) height));
+          Log.e("Height", "" + view.getHeight() + " " + height + " " + toPixels((float) height));
           setSheetHeight(root, view, (int) heightPixel);
         }
         break;
