@@ -275,6 +275,7 @@ declare module "react-native-maps" {
         pointForCoordinate(coordinate: LatLng): Promise<Point>;
         coordinateForPoint(point: Point): Promise<LatLng>;
         centerToUserLocation(): void;
+        centerTo(coordinates: LatLng): void;
     }
 
     export class CoordinatorView extends React.Component<CoordinatorViewProps, any> {

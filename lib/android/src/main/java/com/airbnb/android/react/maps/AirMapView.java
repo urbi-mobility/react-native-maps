@@ -681,6 +681,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
   }
 
+  public void centerTo(LatLng coordinates) {
+    centerCameraTo(coordinates, 600, 15);
+  }
+
   @SuppressLint("MissingPermission")
   public void setShowsUserLocation(boolean showUserLocation) {
     this.showUserLocation = showUserLocation; // hold onto this for lifecycle handling

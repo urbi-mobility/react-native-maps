@@ -39,6 +39,7 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   // urbi-specific
   private static final int CENTER_TO_USER_LOCATION = 666;
+  private static final int CENTER_TO = 667;
 
   private final Map<String, Integer> MAP_TYPES = MapBuilder.of(
       "standard", GoogleMap.MAP_TYPE_NORMAL,
@@ -390,6 +391,13 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
       case CENTER_TO_USER_LOCATION:
         view.centerToUserLocation();
         break;
+
+      case CENTER_TO:
+        region = args.getMap(0);
+        lng = region.getDouble("longitude");
+        lat = region.getDouble("latitude");
+        view.centerTo(new LatLng(lat, lng));
+        break;
     }
   }
 
@@ -445,7 +453,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     map.putAll(MapBuilder.of(
         "setMapBoundaries", SET_MAP_BOUNDARIES,
         "setIndoorActiveLevelIndex", SET_INDOOR_ACTIVE_LEVEL_INDEX,
-        "centerToUserLocation", CENTER_TO_USER_LOCATION
+        "centerToUserLocation", CENTER_TO_USER_LOCATION,
+        "centerTo", CENTER_TO
     ));
 
     return map;
