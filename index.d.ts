@@ -279,6 +279,9 @@ declare module "react-native-maps" {
 
     export class CoordinatorView extends React.Component<CoordinatorViewProps, any> {
         setStatus(newStatus: BottomPanelStatus): void;
+        setHeightSheet(height :number): void;
+        setShowHeader(show :boolean): void;
+
     }
 
     export class MapViewAnimated extends MapView {
