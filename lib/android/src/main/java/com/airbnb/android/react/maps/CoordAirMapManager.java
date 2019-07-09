@@ -42,7 +42,7 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
   private final static String HIDE = "HIDE";
   private final static String ANCHOR = "ANCHOR";
   private final static String DRAGGING = "DRAGGING";
-
+  private float maxHeightScreen=0;
   /*
    * Fixes an issue with the bottom panel's calculated height.
    * More on addView()
@@ -101,13 +101,20 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
 
   @ReactProp(name = "anchorPoint")
   public void setAnchorPoint(CoordAirMapView view, float anchorSize) {
-    WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
-    Display display = wm.getDefaultDisplay();
-    Point size = new Point();
-    display.getSize(size);
-    view.setAnchorPoint(1 - (toPixels(anchorSize) / (float) size.y));
+    view.setAnchorPoint(1 - (toPixels(anchorSize) / getMaxHeightScreen()));
   }
 
+
+  private float getMaxHeightScreen(){
+    if(maxHeightScreen==0) {
+      WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
+      Display display = wm.getDefaultDisplay();
+      Point size = new Point();
+      display.getSize(size);
+      maxHeightScreen =(float) size.y;
+    }
+    return maxHeightScreen;
+  }
 
   @Override
   public void receiveCommand(@Nonnull CoordAirMapView root, int commandId, @Nullable ReadableArray args) {
@@ -133,9 +140,10 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
       case SET_HEIGHT_SHEET:
         if (args != null && args.size() > 0) {
           double height = args.getDouble(0);
+          double heightPixel = toPixels((float) height) > getMaxHeightScreen()? getMaxHeightScreen():toPixels((float) height);
           final FrameLayout view = root.findViewById(R.id.replaceSheet);
-          Log.e("Height", "" + view.getHeight());
-          setSheetHeight(root, view, (int) height);
+          Log.e("Height", "" + view.getHeight()+" "+height+" "+toPixels((float) height));
+          setSheetHeight(root, view, (int) heightPixel);
         }
         break;
     }
@@ -179,7 +187,6 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
                 // view's height. It looks like Android tries to render as many child views as can fit the screen, but
                 // it comes short of VIEW_HEIGHT_OFFSET px (found empirically). Because of that, some empty transparent
                 // pixels are left at the top of the screen, which we really don't want
-                Log.e("FFFFF", "" + height);
                 if (parentFinal.getHeight() - height > VIEW_HEIGHT_OFFSET)
                   setSheetHeight(parentFinal, view, height);
               }
@@ -273,8 +280,9 @@ public class CoordAirMapManager extends ViewGroupManager<CoordAirMapView> {
     }
   }
 
-  int toPixels(float dp) {
+  float toPixels(float dp) {
     return (int) (dp * appContext.getResources().getDisplayMetrics().density + 0.5f);
   }
+
 
 }
