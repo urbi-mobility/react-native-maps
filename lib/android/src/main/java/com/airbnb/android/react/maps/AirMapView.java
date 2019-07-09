@@ -251,6 +251,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   }
 
   private void resetIcon(AirMapMarker airMapMarker) {
+    if (airMapMarker.getOriginalBitmapDescriptor() == null) return;
     Marker m = airMapMarker.getMarker();
     if (m != null && m.getTag() != null) {
       airMapMarker.getMarker().remove();

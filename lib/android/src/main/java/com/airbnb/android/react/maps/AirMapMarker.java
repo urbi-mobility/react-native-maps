@@ -109,6 +109,10 @@ public class AirMapMarker extends AirMapFeature {
                   bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
                   iconBitmap = bitmap;
                   iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
+                  if (originalIconBitmap != null) {
+                    originalIconBitmap = bitmap;
+                    originalBitmapDescriptor = iconBitmapDescriptor;
+                  }
                 }
               }
             }
