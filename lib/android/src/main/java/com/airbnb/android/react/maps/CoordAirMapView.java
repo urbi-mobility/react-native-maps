@@ -70,7 +70,7 @@ public class CoordAirMapView extends LinearLayout {
   }
 
   public void setPeekHeightFirstView(final int peekHeight) {
-    mainBottomSheetBehavior.setPeekHeight(manager.toPixels(peekHeight));
+    mainBottomSheetBehavior.setPeekHeight((int) manager.toPixels(peekHeight));
   }
 
   public void setAnchorPoint(final float anchorPoint) {
