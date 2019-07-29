@@ -697,4 +697,8 @@ public class AirMapMarker extends AirMapFeature {
     }
   }
 
+  public void setSelected(boolean isSelected) {
+    if (isSelected) mapView.setSelectedMarker(this);
+  }
+
 }

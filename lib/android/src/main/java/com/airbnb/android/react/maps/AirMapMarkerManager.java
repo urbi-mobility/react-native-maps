@@ -277,6 +277,11 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
     view.setOff(off);
   }
 
+  @ReactProp(name = "selected", defaultBoolean = false)
+  public void setSelected(AirMapMarker view, boolean selected) {
+    view.setSelected(selected);
+  }
+
   @Override
   public void addView(AirMapMarker parent, View child, int index) {
     // if an <Callout /> component is a child, then it is a callout view, NOT part of the

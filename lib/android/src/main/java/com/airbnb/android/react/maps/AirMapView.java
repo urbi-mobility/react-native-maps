@@ -130,6 +130,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private boolean destroyed = false;
   private final ThemedReactContext context;
   private EventDispatcher eventDispatcher;
+
   private AirMapMarker selectedMarker;
 
   private ViewAttacherGroup attacherGroup;
@@ -332,11 +333,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         event.putString("id", airMapMarker.getIdentifier());
         manager.pushEvent(context, airMapMarker, "onPress", event);
 
-        if (selectedMarker != null) {
-          resetIcon(selectedMarker);
-        }
-        rescaleIcon(airMapMarker, SELECTED_PIN_SCALE_FACTOR);
-        selectedMarker = airMapMarker;
+        setSelectedMarker(airMapMarker);
 
         // Return false to open the callout info window and center on the marker
         // https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap
@@ -397,8 +394,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         event.putString("action", "press");
         manager.pushEvent(context, view, "onPress", event);
         if (selectedMarker != null) {
-          resetIcon(selectedMarker);
-          selectedMarker = null;
+          setSelectedMarker(null);
         }
       }
     });
@@ -1488,6 +1484,19 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
 
     return airMarker;
+  }
+
+  public void setSelectedMarker(AirMapMarker selectedMarker) {
+
+    if (this.selectedMarker == selectedMarker) return;
+
+    if (this.selectedMarker != null) {
+      resetIcon(this.selectedMarker);
+    }
+
+    if (selectedMarker != null) rescaleIcon(selectedMarker, SELECTED_PIN_SCALE_FACTOR);
+    
+    this.selectedMarker = selectedMarker;
   }
 
   public void setPaddingListener(AirMapPaddingListener listener) {

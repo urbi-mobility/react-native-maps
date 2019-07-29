@@ -56,6 +56,7 @@ class Urbi extends React.Component {
       onPress={this.onMarkerPress(`${v.provider} - ${v.id}`)}
       tracksViewChanges={false}
       off={v.off}
+      selected={v.selected}
     />
   );
 
@@ -92,10 +93,16 @@ class Urbi extends React.Component {
 
   onMapReady() {
     setTimeout(() => {
-      const marker = this.state.markers.find(m => m.provider === 'emio' && m.id === '1108');
+      let marker = this.state.markers.find(m => m.provider === 'emio' && m.id === '1108');
       marker.provider = 'drivenow';
       this.setState({ markers: [...this.state.markers], flippedPin: true });
       ToastAndroid.show('switched emio 1108 to drivenow', ToastAndroid.SHORT);
+      setTimeout(() => {
+        marker = this.state.markers.find(m => m.provider === 'drivenow' && m.id === '1108');
+        marker.selected = true;
+        this.setState({ markers: [...this.state.markers] });
+        ToastAndroid.show('selected emio 1108', ToastAndroid.SHORT);
+      }, 3000);
     }, 8000);
   }
 
@@ -112,7 +119,18 @@ class Urbi extends React.Component {
   }
 
   onMarkerPress(key) {
-    return () => this.setState({ selected: key });
+    return () => {
+      const { selected } = this.state;
+      if (selected) {
+        const [oldProvider, oldId] = selected.split(' - ') ;
+        const oldSelected = this.state.markers.find(m => m.provider === oldProvider && m.id === oldId);
+        oldSelected.selected = false;
+      }
+      const [provider, id] = key.split(' - ');
+      const selectedMarker = this.state.markers.find(m => m.provider === provider && m.id === id);
+      selectedMarker.selected = true;
+      this.setState({ selected: key, markers: [...this.state.markers] });
+    }
   }
 
   onCityPress(e) {
