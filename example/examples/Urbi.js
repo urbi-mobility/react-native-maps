@@ -100,9 +100,12 @@ class Urbi extends React.Component {
       setTimeout(() => {
         marker = this.state.markers.find(m => m.provider === 'drivenow' && m.id === '1108');
         marker.selected = true;
-        this.setState({ markers: [...this.state.markers] });
+        this.setState({ markers: [...this.state.markers], selected: `${marker.provider} - ${marker.id}` });
         ToastAndroid.show('selected emio 1108', ToastAndroid.SHORT);
       }, 3000);
+      setTimeout(() => {
+        this.setState({ markers: this.state.markers.filter(m => m.provider !== 'drivenow' || m.id !== '1108')})
+      }, 10000);
     }, 8000);
   }
 
@@ -124,7 +127,7 @@ class Urbi extends React.Component {
       if (selected) {
         const [oldProvider, oldId] = selected.split(' - ') ;
         const oldSelected = this.state.markers.find(m => m.provider === oldProvider && m.id === oldId);
-        oldSelected.selected = false;
+        if (oldSelected) oldSelected.selected = false;
       }
       const [provider, id] = key.split(' - ');
       const selectedMarker = this.state.markers.find(m => m.provider === provider && m.id === id);

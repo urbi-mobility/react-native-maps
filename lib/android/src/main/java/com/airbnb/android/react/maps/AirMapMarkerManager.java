@@ -279,7 +279,7 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
 
   @ReactProp(name = "selected", defaultBoolean = false)
   public void setSelected(AirMapMarker view, boolean selected) {
-    view.setSelected(selected);
+    if (view != null) view.setSelected(selected);
   }
 
   @Override

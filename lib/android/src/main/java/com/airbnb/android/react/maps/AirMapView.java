@@ -867,6 +867,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (feature instanceof AirMapMarker) {
       markerMap.remove(feature.getFeature());
       allMarkers.remove(feature);
+      if (this.selectedMarker != null && this.selectedMarker == feature) {
+        setSelectedMarker(null);
+      }
     }
     feature.removeFromMap(map);
   }
