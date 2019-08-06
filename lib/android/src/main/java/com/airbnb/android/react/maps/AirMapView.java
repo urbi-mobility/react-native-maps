@@ -90,7 +90,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   /**
    * urbi-specific fields
    */
-  private static final double SELECTED_PIN_SCALE_FACTOR = 1.2;
+  public static final double PIN_SCALE_FACTOR = 0.8;
   private float switchToCityPinsDelta = Float.MAX_VALUE;
   private final Set<AirMapMarker> allMarkers = new HashSet<>();
   private final Map<LatLng, AirMapCity> cities = new HashMap<>();
@@ -235,6 +235,21 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
   private void rescaleIcon(AirMapMarker airMapMarker, double scaleFactor) {
 
+    if (airMapMarker.getOriginalBitmapDescriptor() == null) return;
+    Marker m = airMapMarker.getMarker();
+    if (m != null && m.getTag() != null) {
+      airMapMarker.getMarker().remove();
+    }
+    markerMap.remove(airMapMarker.getMarker());
+    airMapMarker.toggleIconBitmap();
+    if (mustShowProviderMarkers()) {
+      airMapMarker.addToMap(map, this);
+      markerMap.put(airMapMarker.getMarker(), airMapMarker);
+    }
+
+  }
+
+  private void resetIcon(AirMapMarker airMapMarker) {
     // if there's no icon to rescale, skip everything
     Bitmap b = airMapMarker.getIconBitmap();
     if (b == null) return;
@@ -245,24 +260,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
     markerMap.remove(airMapMarker.getMarker());
 
-    Bitmap scaled = Bitmap.createScaledBitmap(b, (int) (b.getWidth() * scaleFactor), (int) (b.getHeight() * scaleFactor), false);
-    airMapMarker.setIconBitmapDescriptor(BitmapDescriptorFactory.fromBitmap(scaled), scaled);
+    airMapMarker.toggleIconBitmap();
     airMapMarker.addToMap(map, this);
     markerMap.put(airMapMarker.getMarker(), airMapMarker);
-  }
-
-  private void resetIcon(AirMapMarker airMapMarker) {
-    if (airMapMarker.getOriginalBitmapDescriptor() == null) return;
-    Marker m = airMapMarker.getMarker();
-    if (m != null && m.getTag() != null) {
-      airMapMarker.getMarker().remove();
-    }
-    markerMap.remove(airMapMarker.getMarker());
-    airMapMarker.setIconBitmapDescriptor(airMapMarker.getOriginalBitmapDescriptor(), airMapMarker.getOriginalIconBitmap());
-    if (mustShowProviderMarkers()) {
-      airMapMarker.addToMap(map, this);
-      markerMap.put(airMapMarker.getMarker(), airMapMarker);
-    }
   }
 
   @Override
@@ -1497,7 +1497,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       resetIcon(this.selectedMarker);
     }
 
-    if (selectedMarker != null) rescaleIcon(selectedMarker, SELECTED_PIN_SCALE_FACTOR);
+    if (selectedMarker != null) rescaleIcon(selectedMarker, 1.2);
     
     this.selectedMarker = selectedMarker;
   }

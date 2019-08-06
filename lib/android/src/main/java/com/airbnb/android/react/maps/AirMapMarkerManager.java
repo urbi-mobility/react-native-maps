@@ -32,6 +32,8 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
   public static class AirMapMarkerSharedIcon {
     private BitmapDescriptor iconBitmapDescriptor;
     private Bitmap bitmap;
+    private BitmapDescriptor originalBitmapDescriptor;
+    private Bitmap originalBitmap;
     private Map<AirMapMarker, Boolean> markers;
     private boolean loadImageStarted;
 
@@ -65,8 +67,7 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
       this.markers.put(marker, true);
       if (this.iconBitmapDescriptor != null) {
         marker.setIconBitmapDescriptor(this.iconBitmapDescriptor, this.bitmap);
-        marker.setOriginalBitmapDescriptor(this.iconBitmapDescriptor);
-        marker.setOriginalIconBitmap(this.bitmap);
+        marker.setOriginalBitmapDescriptor(this.originalBitmapDescriptor, this.originalBitmap);
       }
     }
 
@@ -98,10 +99,12 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
      * @param bitmapDescriptor
      * @param bitmap
      */
-    public synchronized void updateIcon(BitmapDescriptor bitmapDescriptor, Bitmap bitmap) {
+    public synchronized void updateIcon(BitmapDescriptor bitmapDescriptor, Bitmap bitmap, BitmapDescriptor originalBitmapDescriptor, Bitmap originalBitmap) {
 
       this.iconBitmapDescriptor = bitmapDescriptor;
       this.bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+      this.originalBitmapDescriptor = originalBitmapDescriptor;
+      this.originalBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
       if (this.markers.isEmpty()) {
         return;
@@ -110,6 +113,7 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
       for (Map.Entry<AirMapMarker, Boolean> markerEntry: markers.entrySet()) {
         if (markerEntry.getKey() != null) {
           markerEntry.getKey().setIconBitmapDescriptor(bitmapDescriptor, bitmap);
+          markerEntry.getKey().setOriginalBitmapDescriptor(originalBitmapDescriptor, originalBitmap);
         }
       }
     }

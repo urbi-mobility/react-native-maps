@@ -40,6 +40,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import javax.annotation.Nullable;
 
+import static com.airbnb.android.react.maps.AirMapView.PIN_SCALE_FACTOR;
+
 public class AirMapMarker extends AirMapFeature {
 
   private MarkerOptions markerOptions;
@@ -107,12 +109,10 @@ public class AirMapMarker extends AirMapFeature {
                 Bitmap bitmap = closeableStaticBitmap.getUnderlyingBitmap();
                 if (bitmap != null) {
                   bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-                  iconBitmap = bitmap;
-                  iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
-                  if (originalIconBitmap != null) {
-                    originalIconBitmap = bitmap;
-                    originalBitmapDescriptor = iconBitmapDescriptor;
-                  }
+                  iconBitmap = getScaledDownBitmap(bitmap);
+                  iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(iconBitmap);
+                  originalIconBitmap = bitmap;
+                  originalBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
                 }
               }
             }
@@ -124,7 +124,7 @@ public class AirMapMarker extends AirMapFeature {
           }
           if (AirMapMarker.this.markerManager != null && AirMapMarker.this.imageUri != null) {
             AirMapMarker.this.markerManager.getSharedIcon(AirMapMarker.this.imageUri)
-                .updateIcon(iconBitmapDescriptor, iconBitmap);
+                .updateIcon(iconBitmapDescriptor, iconBitmap, originalBitmapDescriptor, originalIconBitmap);
           }
           update(true);
         }
@@ -390,7 +390,7 @@ public class AirMapMarker extends AirMapFeature {
           }
       }
       if (this.markerManager != null && uri != null) {
-        this.markerManager.getSharedIcon(uri).updateIcon(iconBitmapDescriptor, iconBitmap);
+        this.markerManager.getSharedIcon(uri).updateIcon(iconBitmapDescriptor, iconBitmap, originalBitmapDescriptor, originalIconBitmap);
       }
       update(true);
     }
@@ -407,17 +407,24 @@ public class AirMapMarker extends AirMapFeature {
     this.update(true);
   }
 
+  public void toggleIconBitmap() {
+    Bitmap tmp = originalIconBitmap;
+    BitmapDescriptor tmpDescriptor = originalBitmapDescriptor;
+    originalIconBitmap = iconBitmap;
+    originalBitmapDescriptor = iconBitmapDescriptor;
+    iconBitmap = tmp;
+    iconBitmapDescriptor = tmpDescriptor;
+    this.hasViewChanges = true;
+    this.update(true);
+  }
+
   public void setIconBitmap(Bitmap bitmap) {
     this.iconBitmap = bitmap;
   }
 
-  public AirMapMarker setOriginalBitmapDescriptor(BitmapDescriptor originalBitmapDescriptor) {
+  public AirMapMarker setOriginalBitmapDescriptor(BitmapDescriptor originalBitmapDescriptor, Bitmap originalBitmap) {
     this.originalBitmapDescriptor = originalBitmapDescriptor;
-    return this;
-  }
-
-  public AirMapMarker setOriginalIconBitmap(Bitmap originalIconBitmap) {
-    this.originalIconBitmap = originalIconBitmap;
+    this.originalIconBitmap = originalBitmap;
     return this;
   }
 
@@ -701,4 +708,11 @@ public class AirMapMarker extends AirMapFeature {
     if (isSelected && mapView != null) mapView.setSelectedMarker(this);
   }
 
+  public void scaleDown() {
+    setIconBitmapDescriptor(iconBitmapDescriptor, iconBitmap);
+  }
+
+  private Bitmap getScaledDownBitmap(Bitmap b) {
+    return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * PIN_SCALE_FACTOR), (int) (b.getHeight() * PIN_SCALE_FACTOR), true);
+  }
 }
