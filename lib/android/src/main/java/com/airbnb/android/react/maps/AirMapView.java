@@ -1489,16 +1489,20 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     return airMarker;
   }
 
-  public void setSelectedMarker(AirMapMarker selectedMarker) {
+  public void setSelectedMarker(final AirMapMarker selectedMarker) {
 
     if (this.selectedMarker == selectedMarker) return;
 
     if (this.selectedMarker != null) {
       resetIcon(this.selectedMarker);
+      this.selectedMarker.setZIndex(0);
     }
 
-    if (selectedMarker != null) rescaleIcon(selectedMarker, 1.2);
-    
+    if (selectedMarker != null) {
+      rescaleIcon(selectedMarker, 1.2);
+      selectedMarker.setZIndex(1);
+    }
+
     this.selectedMarker = selectedMarker;
   }
 

@@ -387,6 +387,11 @@ public class AirMapMarker extends AirMapFeature {
               drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
               Canvas canvas = new Canvas(iconBitmap);
               drawable.draw(canvas);
+          } else {
+            originalIconBitmap = iconBitmap;
+            iconBitmap = getScaledDownBitmap(originalIconBitmap);
+            iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(iconBitmap);
+            originalBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(originalIconBitmap);
           }
       }
       if (this.markerManager != null && uri != null) {
