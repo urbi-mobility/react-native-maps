@@ -233,7 +233,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     addView(attacherGroup);
   }
 
-  private void rescaleIcon(AirMapMarker airMapMarker, double scaleFactor) {
+  private void rescaleIcon(AirMapMarker airMapMarker) {
 
     if (airMapMarker.getOriginalBitmapDescriptor() == null) return;
     Marker m = airMapMarker.getMarker();
@@ -1494,13 +1494,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (this.selectedMarker == selectedMarker) return;
 
     if (this.selectedMarker != null) {
-      resetIcon(this.selectedMarker);
-      this.selectedMarker.setZIndex(0);
+      rescaleIcon(this.selectedMarker);
     }
 
     if (selectedMarker != null) {
-      rescaleIcon(selectedMarker, 1.2);
-      selectedMarker.setZIndex(1);
+      resetIcon(selectedMarker);
     }
 
     this.selectedMarker = selectedMarker;
