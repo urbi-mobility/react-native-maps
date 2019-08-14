@@ -16,7 +16,7 @@ import MapView, {
   Marker,
   ProviderPropType,
 } from 'react-native-maps';
-import berlinVehicleList from './assets/vehicles.json';
+import berlinVehicleList from './assets/four-vehicles.json';
 import hamburgVehicleList from './assets/vehicles-hamburg.json';
 import cityList from './assets/cities.json';
 import pins, { cityIcons } from './UrbiImages';
@@ -92,21 +92,6 @@ class Urbi extends React.Component {
   }
 
   onMapReady() {
-    setTimeout(() => {
-      let marker = this.state.markers.find(m => m.provider === 'emio' && m.id === '1108');
-      marker.provider = 'drivenow';
-      this.setState({ markers: [...this.state.markers], flippedPin: true });
-      ToastAndroid.show('switched emio 1108 to drivenow', ToastAndroid.SHORT);
-      setTimeout(() => {
-        marker = this.state.markers.find(m => m.provider === 'drivenow' && m.id === '1108');
-        marker.selected = true;
-        this.setState({ markers: [...this.state.markers], selected: `${marker.provider} - ${marker.id}` });
-        ToastAndroid.show('selected emio 1108', ToastAndroid.SHORT);
-      }, 3000);
-      setTimeout(() => {
-        this.setState({ markers: this.state.markers.filter(m => m.provider !== 'drivenow' || m.id !== '1108')})
-      }, 10000);
-    }, 8000);
   }
 
   onMapPress() {

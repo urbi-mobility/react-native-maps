@@ -1,0 +1,176 @@
+{
+  "cache": {
+    "car2go": false,
+    "driveby": false,
+    "drivenow": false,
+    "coup": false,
+    "emio": false
+  },
+  "location": "berlin",
+  "vehicles": [
+    {
+      "fuel": {
+        "percent": 84,
+        "range": 50,
+        "type": "electric"
+      },
+      "id": "69fe34d2-8df1-4c2e-9c13-baa8911088f4",
+      "licensePlate": "507ERF",
+      "location": {
+        "lat": 52.520973,
+        "lon": 13.409419
+      },
+      "model": "Gogoro 1st edition",
+      "prices": {
+        "currency": "eur",
+        "daily": [
+          {
+            "amount": 2000,
+            "unit": "day"
+          }
+        ],
+        "label": "2,10€/20 min",
+        "moving": [
+          {
+            "amount": 210,
+            "customUnit": {
+              "after": {
+                "amount": 21,
+                "unit": "min"
+              },
+              "minutes": 20
+            },
+            "unit": "custom"
+          }
+        ]
+      },
+      "provider": "drivenow",
+      "seats": 1,
+      "transmission": "automatic",
+      "type": "scooter"
+    },
+    {
+      "fuel": {
+        "percent": 84,
+        "range": 50,
+        "type": "electric"
+      },
+      "id": "69fe34d2-8df1-4c2e-9c13-baa8911088f3",
+      "licensePlate": "507ERE",
+      "location": {
+        "lat": 52.520963,
+        "lon": 13.4085
+      },
+      "model": "Gogoro 1st edition",
+      "prices": {
+        "currency": "eur",
+        "daily": [
+          {
+            "amount": 2000,
+            "unit": "day"
+          }
+        ],
+        "label": "2,10€/20 min",
+        "moving": [
+          {
+            "amount": 210,
+            "customUnit": {
+              "after": {
+                "amount": 21,
+                "unit": "min"
+              },
+              "minutes": 20
+            },
+            "unit": "custom"
+          }
+        ]
+      },
+      "provider": "driveby",
+      "seats": 1,
+      "transmission": "automatic",
+      "type": "scooter"
+    },
+    {
+      "fuel": {
+        "percent": 84,
+        "range": 50,
+        "type": "electric"
+      },
+      "id": "69fe34d2-8df1-4c2e-9c13-baa8911088f6",
+      "licensePlate": "507ERH",
+      "location": {
+        "lat": 52.520773,
+        "lon": 13.409419
+      },
+      "model": "Gogoro 1st edition",
+      "prices": {
+        "currency": "eur",
+        "daily": [
+          {
+            "amount": 2000,
+            "unit": "day"
+          }
+        ],
+        "label": "2,10€/20 min",
+        "moving": [
+          {
+            "amount": 210,
+            "customUnit": {
+              "after": {
+                "amount": 21,
+                "unit": "min"
+              },
+              "minutes": 20
+            },
+            "unit": "custom"
+          }
+        ]
+      },
+      "provider": "emio",
+      "seats": 1,
+      "transmission": "automatic",
+      "type": "scooter"
+    },
+    {
+      "fuel": {
+        "percent": 84,
+        "range": 50,
+        "type": "electric"
+      },
+      "id": "69fe34d2-8df1-4c2e-9c13-baa8911088f5",
+      "licensePlate": "507ERG",
+      "location": {
+        "lat": 52.520773,
+        "lon": 13.409219
+      },
+      "model": "Gogoro 1st edition",
+      "prices": {
+        "currency": "eur",
+        "daily": [
+          {
+            "amount": 2000,
+            "unit": "day"
+          }
+        ],
+        "label": "2,10€/20 min",
+        "moving": [
+          {
+            "amount": 210,
+            "customUnit": {
+              "after": {
+                "amount": 21,
+                "unit": "min"
+              },
+              "minutes": 20
+            },
+            "unit": "custom"
+          }
+        ]
+      },
+      "provider": "coup",
+      "seats": 1,
+      "transmission": "automatic",
+      "type": "scooter"
+    }
+  ]
+}

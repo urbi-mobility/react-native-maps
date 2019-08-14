@@ -273,8 +273,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     this.map = map;
     this.map.setInfoWindowAdapter(this);
     this.map.setOnMarkerDragListener(this);
-    this.map.setOnPoiClickListener(this);
-    this.map.setOnIndoorStateChangeListener(this);
+  this.map.setOnPoiClickListener(this);
+  this.map.setOnIndoorStateChangeListener(this);
 
     manager.pushEvent(context, this, "onMapReady", new WritableNativeMap());
 
@@ -315,7 +315,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
           manager.pushEvent(context, view, "onCityPress", event);
 
           // TODO check if user's location is within the city, if so, zoom there instead
-          // TODO check if there's a way to calculate the offset _after_ changing the zoom level
           LatLng centerTo = city.getPinPosition();
           map.animateCamera(CameraUpdateFactory.newLatLngZoom(centerTo, 15), 350, null);
           return true;
@@ -342,7 +341,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
           return false;
         } else {
           marker.showInfoWindow();
-          centerCameraTo(marker.getPosition(), 250, null);
+          centerCameraTo(marker.getPosition(), 150, null);
           return true;
         }
       }
