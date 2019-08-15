@@ -7,6 +7,8 @@ const icPinEmio = require('./assets/ic_pin_emio.png');
 const berlin = require('./assets/ic_pin_berlin.png');
 const hamburg = require('./assets/ic_pin_hamburg.png');
 
+const flagPink = require('./assets/flag-pink.png');
+
 export const cityIcons = {
   berlin,
   hamburg,
@@ -18,4 +20,5 @@ export default {
   ic_pin_driveby: icPinDriveby,
   ic_pin_drivenow: icPinDrivenow,
   ic_pin_emio: icPinEmio,
+  flagPink
 };

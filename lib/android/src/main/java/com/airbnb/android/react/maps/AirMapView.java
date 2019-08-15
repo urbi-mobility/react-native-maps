@@ -233,23 +233,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     addView(attacherGroup);
   }
 
-  private void rescaleIcon(AirMapMarker airMapMarker) {
+  private void scaleDown(AirMapMarker airMapMarker) {
 
-    if (airMapMarker.getOriginalBitmapDescriptor() == null) return;
-    Marker m = airMapMarker.getMarker();
-    if (m != null && m.getTag() != null) {
-      airMapMarker.getMarker().remove();
-    }
-    markerMap.remove(airMapMarker.getMarker());
-    airMapMarker.toggleIconBitmap();
-    if (mustShowProviderMarkers()) {
-      airMapMarker.addToMap(map, this);
-      markerMap.put(airMapMarker.getMarker(), airMapMarker);
-    }
-
-  }
-
-  private void resetIcon(AirMapMarker airMapMarker) {
     // if there's no icon to rescale, skip everything
     Bitmap b = airMapMarker.getIconBitmap();
     if (b == null) return;
@@ -259,8 +244,25 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       airMapMarker.getMarker().remove();
     }
     markerMap.remove(airMapMarker.getMarker());
+    airMapMarker.setIconFullSize(false);
+    if (mustShowProviderMarkers()) {
+      airMapMarker.addToMap(map, this);
+      markerMap.put(airMapMarker.getMarker(), airMapMarker);
+    }
 
-    airMapMarker.toggleIconBitmap();
+  }
+
+  private void setOriginalSize(AirMapMarker airMapMarker) {
+    // if there's no icon to rescale, skip everything
+    if (airMapMarker.getOriginalBitmapDescriptor() == null) return;
+
+    Marker m = airMapMarker.getMarker();
+    if (m != null && m.getTag() != null) {
+      airMapMarker.getMarker().remove();
+    }
+    markerMap.remove(airMapMarker.getMarker());
+
+    airMapMarker.setIconFullSize(true);
     airMapMarker.addToMap(map, this);
     markerMap.put(airMapMarker.getMarker(), airMapMarker);
   }
@@ -1493,11 +1495,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (this.selectedMarker == selectedMarker) return;
 
     if (this.selectedMarker != null) {
-      rescaleIcon(this.selectedMarker);
+      scaleDown(this.selectedMarker);
     }
 
     if (selectedMarker != null) {
-      resetIcon(selectedMarker);
+      setOriginalSize(selectedMarker);
     }
 
     this.selectedMarker = selectedMarker;

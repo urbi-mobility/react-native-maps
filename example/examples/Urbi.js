@@ -52,7 +52,7 @@ class Urbi extends React.Component {
       key={v.id}
       centerOffset={{ x: 0, y: -19.5 }}
       coordinate={{ latitude: v.location.lat, longitude: v.location.lon }}
-      image={pins[`ic_pin_${v.provider}`]}
+      image={v.booked ? pins.flagPink : pins[`ic_pin_${v.provider}`]}
       onPress={this.onMarkerPress(`${v.provider} - ${v.id}`)}
       tracksViewChanges={false}
       off={v.off}
@@ -92,6 +92,15 @@ class Urbi extends React.Component {
   }
 
   onMapReady() {
+    setTimeout(() => {
+      const bookMe = this.state.markers[0];
+      bookMe.selected = true;
+      this.setState({ markers: [...this.state.markers], selected: bookMe.id });
+      setTimeout(() => {
+        bookMe.booked = true;
+        this.setState({ markers: [...this.state.markers] });
+      }, 1500);
+    }, 1500);
   }
 
   onMapPress() {

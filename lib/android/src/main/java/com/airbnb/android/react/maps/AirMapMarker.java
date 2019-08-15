@@ -71,6 +71,8 @@ public class AirMapMarker extends AirMapFeature {
   private Bitmap iconBitmap;
   private BitmapDescriptor originalBitmapDescriptor;
   private Bitmap originalIconBitmap;
+  private BitmapDescriptor scaledDownBitmapDescriptor;
+  private Bitmap scaledDownBitmap;
 
   private float rotation = 0.0f;
   private boolean flat = false;
@@ -85,6 +87,8 @@ public class AirMapMarker extends AirMapFeature {
   private boolean tracksViewChanges = true;
   private boolean tracksViewChangesActive = false;
   private boolean hasViewChanges = true;
+
+  private boolean selected;
 
   private boolean hasCustomMarkerView = false;
   private final AirMapMarkerManager markerManager;
@@ -109,10 +113,12 @@ public class AirMapMarker extends AirMapFeature {
                 Bitmap bitmap = closeableStaticBitmap.getUnderlyingBitmap();
                 if (bitmap != null) {
                   bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-                  iconBitmap = getScaledDownBitmap(bitmap);
-                  iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(iconBitmap);
+                  scaledDownBitmap = getScaledDownBitmap(bitmap);
+                  scaledDownBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(scaledDownBitmap);
                   originalIconBitmap = bitmap;
-                  originalBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
+                  originalBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(originalIconBitmap);
+                  iconBitmap = selected ? originalIconBitmap : scaledDownBitmap;
+                  iconBitmapDescriptor = selected ? originalBitmapDescriptor : scaledDownBitmapDescriptor;
                 }
               }
             }
@@ -124,7 +130,7 @@ public class AirMapMarker extends AirMapFeature {
           }
           if (AirMapMarker.this.markerManager != null && AirMapMarker.this.imageUri != null) {
             AirMapMarker.this.markerManager.getSharedIcon(AirMapMarker.this.imageUri)
-                .updateIcon(iconBitmapDescriptor, iconBitmap, originalBitmapDescriptor, originalIconBitmap);
+                .updateIcon(scaledDownBitmapDescriptor, scaledDownBitmap, originalBitmapDescriptor, originalIconBitmap);
           }
           update(true);
         }
@@ -357,7 +363,9 @@ public class AirMapMarker extends AirMapFeature {
     }
 
     this.imageUri = uri;
-    if (!shouldLoadImage) {return;}
+    if (!shouldLoadImage) {
+      return;
+    }
 
     if (uri == null) {
       iconBitmapDescriptor = null;
@@ -389,9 +397,11 @@ public class AirMapMarker extends AirMapFeature {
               drawable.draw(canvas);
           } else {
             originalIconBitmap = iconBitmap;
-            iconBitmap = getScaledDownBitmap(originalIconBitmap);
-            iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(iconBitmap);
             originalBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(originalIconBitmap);
+            scaledDownBitmap = getScaledDownBitmap(originalIconBitmap);
+            scaledDownBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(scaledDownBitmap);
+            iconBitmap = selected ? originalIconBitmap : scaledDownBitmap;
+            iconBitmapDescriptor = selected ? originalBitmapDescriptor : scaledDownBitmapDescriptor;
           }
       }
       if (this.markerManager != null && uri != null) {
@@ -401,36 +411,22 @@ public class AirMapMarker extends AirMapFeature {
     }
   }
 
-  public void setIconBitmapDescriptor(BitmapDescriptor bitmapDescriptor, Bitmap bitmap) {
-    this.iconBitmapDescriptor = bitmapDescriptor;
-    this.iconBitmap = bitmap;
-    if (this.originalBitmapDescriptor == null) {
-      this.originalBitmapDescriptor = bitmapDescriptor;
-      this.originalIconBitmap = bitmap;
-    }
-    this.hasViewChanges = true;
-    this.update(true);
-  }
-
-  public void toggleIconBitmap() {
-    Bitmap tmp = originalIconBitmap;
-    BitmapDescriptor tmpDescriptor = originalBitmapDescriptor;
-    originalIconBitmap = iconBitmap;
-    originalBitmapDescriptor = iconBitmapDescriptor;
-    iconBitmap = tmp;
-    iconBitmapDescriptor = tmpDescriptor;
-    this.hasViewChanges = true;
-    this.update(true);
-  }
-
-  public void setIconBitmap(Bitmap bitmap) {
-    this.iconBitmap = bitmap;
-  }
-
-  public AirMapMarker setOriginalBitmapDescriptor(BitmapDescriptor originalBitmapDescriptor, Bitmap originalBitmap) {
+  public void setIconBitmapDescriptor(BitmapDescriptor bitmapDescriptor, Bitmap bitmap, BitmapDescriptor originalBitmapDescriptor, Bitmap originalBitmap) {
+    this.scaledDownBitmapDescriptor = bitmapDescriptor;
+    this.scaledDownBitmap = bitmap;
     this.originalBitmapDescriptor = originalBitmapDescriptor;
     this.originalIconBitmap = originalBitmap;
-    return this;
+    this.iconBitmap = selected ? originalIconBitmap : scaledDownBitmap;
+    this.iconBitmapDescriptor = selected ? originalBitmapDescriptor : scaledDownBitmapDescriptor;
+    this.hasViewChanges = true;
+    this.update(true);
+  }
+
+  public void setIconFullSize(boolean isFullSize) {
+    iconBitmap = isFullSize ? originalIconBitmap : scaledDownBitmap;
+    iconBitmapDescriptor = isFullSize ? originalBitmapDescriptor : scaledDownBitmapDescriptor;
+    this.hasViewChanges = true;
+    this.update(true);
   }
 
   public MarkerOptions getMarkerOptions() {
@@ -710,11 +706,8 @@ public class AirMapMarker extends AirMapFeature {
   }
 
   public void setSelected(boolean isSelected) {
+    this.selected = isSelected;
     if (isSelected && mapView != null) mapView.setSelectedMarker(this);
-  }
-
-  public void scaleDown() {
-    setIconBitmapDescriptor(iconBitmapDescriptor, iconBitmap);
   }
 
   private Bitmap getScaledDownBitmap(Bitmap b) {

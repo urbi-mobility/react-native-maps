@@ -66,8 +66,7 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
     public synchronized void addMarker(AirMapMarker marker) {
       this.markers.put(marker, true);
       if (this.iconBitmapDescriptor != null) {
-        marker.setIconBitmapDescriptor(this.iconBitmapDescriptor, this.bitmap);
-        marker.setOriginalBitmapDescriptor(this.originalBitmapDescriptor, this.originalBitmap);
+        marker.setIconBitmapDescriptor(this.iconBitmapDescriptor, this.bitmap, originalBitmapDescriptor, originalBitmap);
       }
     }
 
@@ -104,7 +103,7 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
       this.iconBitmapDescriptor = bitmapDescriptor;
       this.bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
       this.originalBitmapDescriptor = originalBitmapDescriptor;
-      this.originalBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+      this.originalBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);
 
       if (this.markers.isEmpty()) {
         return;
@@ -112,8 +111,7 @@ public class AirMapMarkerManager extends ViewGroupManager<AirMapMarker> {
 
       for (Map.Entry<AirMapMarker, Boolean> markerEntry: markers.entrySet()) {
         if (markerEntry.getKey() != null) {
-          markerEntry.getKey().setIconBitmapDescriptor(bitmapDescriptor, bitmap);
-          markerEntry.getKey().setOriginalBitmapDescriptor(originalBitmapDescriptor, originalBitmap);
+          markerEntry.getKey().setIconBitmapDescriptor(bitmapDescriptor, bitmap, originalBitmapDescriptor, originalBitmap);
         }
       }
     }
