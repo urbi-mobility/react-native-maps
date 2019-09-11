@@ -318,7 +318,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
           // TODO check if user's location is within the city, if so, zoom there instead
           LatLng centerTo = city.getPinPosition();
-          map.animateCamera(CameraUpdateFactory.newLatLngZoom(centerTo, 15), 350, null);
+          map.animateCamera(CameraUpdateFactory.newLatLngZoom(centerTo, 16), 350, null);
           return true;
         }
 
@@ -673,14 +673,14 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         @Override
         public void onSuccess(Location location) {
           if (location != null)
-            centerCameraTo(new LatLng(location.getLatitude(), location.getLongitude()), 600, 15);
+            centerCameraTo(new LatLng(location.getLatitude(), location.getLongitude()), 600, 16);
         }
       });
     }
   }
 
   public void centerTo(LatLng coordinates) {
-    centerCameraTo(coordinates, 600, 15);
+    centerCameraTo(coordinates, 600, 16);
   }
 
   @SuppressLint("MissingPermission")
