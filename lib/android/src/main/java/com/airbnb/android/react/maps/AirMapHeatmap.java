@@ -100,8 +100,9 @@ public class AirMapHeatmap extends AirMapFeature {
         return heatmap;
     }
 
+
     @Override
-    public void addToMap(GoogleMap map) {
+    public void addToMap(GoogleMap map, AirMapView view) {
         Log.d("AirMapHeatmap", "ADD TO MAP");
         heatmap = map.addTileOverlay(getHeatmapOptions());
     }

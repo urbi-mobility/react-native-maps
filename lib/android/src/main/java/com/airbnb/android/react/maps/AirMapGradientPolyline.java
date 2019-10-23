@@ -322,8 +322,9 @@ public class AirMapGradientPolyline extends AirMapFeature {
     return tileOverlay;
   }
 
+
   @Override
-  public void addToMap(GoogleMap map) {
+  public void addToMap(GoogleMap map, AirMapView view) {
     Log.d("AirMapGradientPolyline", "ADDTOMAP");
     this.map = map;
     this.tileOverlay = map.addTileOverlay(createTileOverlayOptions());

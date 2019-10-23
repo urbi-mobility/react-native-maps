@@ -130,8 +130,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private final Map<GroundOverlay, AirMapOverlay> overlayMap = new HashMap<>();
   private final Map<TileOverlay, AirMapHeatmap> heatmapMap = new HashMap<>();
   private final Map<TileOverlay, AirMapGradientPolyline> gradientPolylineMap = new HashMap<>();
-  private final GestureDetectorCompat gestureDetector;
-  private final AirMapManager manager;
+  private GestureDetectorCompat gestureDetector;
+  private AirMapManager manager;
   private LifecycleEventListener lifecycleListener;
   private boolean paused = false;
   private boolean destroyed = false;
@@ -139,6 +139,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private EventDispatcher eventDispatcher;
 
   private AirMapMarker selectedMarker;
+  AirMapPaddingListener paddingListener;
 
   private ViewAttacherGroup attacherGroup;
 
@@ -791,7 +792,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       polylineMap.put(polyline, polylineView);
     } else if (child instanceof AirMapGradientPolyline) {
       AirMapGradientPolyline polylineView = (AirMapGradientPolyline) child;
-      polylineView.addToMap(map);
+      polylineView.addToMap(map,this);
       features.add(index, polylineView);
       TileOverlay tileOverlay = (TileOverlay) polylineView.getFeature();
       gradientPolylineMap.put(tileOverlay, polylineView);
@@ -825,7 +826,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       overlayMap.put(overlay, overlayView);
     } else if (child instanceof AirMapHeatmap) {
       AirMapHeatmap heatmapView = (AirMapHeatmap) child;
-      heatmapView.addToMap(map);
+      heatmapView.addToMap(map,this);
       features.add(index, heatmapView);
       TileOverlay heatmap = (TileOverlay)heatmapView.getFeature();
       heatmapMap.put(heatmap, heatmapView);

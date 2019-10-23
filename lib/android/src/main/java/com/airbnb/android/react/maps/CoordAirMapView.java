@@ -1,15 +1,17 @@
 package com.airbnb.android.react.maps;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomSheetBehavior;
+
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.hardsoftstudio.widget.AnchorSheetBehavior;
 
 public class CoordAirMapView extends LinearLayout {

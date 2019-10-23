@@ -2,13 +2,14 @@ package com.airbnb.android.react.maps;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.support.design.widget.CoordinatorLayout;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
