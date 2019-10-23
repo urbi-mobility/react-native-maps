@@ -87,6 +87,7 @@ const NSInteger AIRMapMaxZoomLevel = 20;
 
         self.minZoomLevel = 0;
         self.maxZoomLevel = AIRMapMaxZoomLevel;
+        self.compassOffset = CGPointMake(0, 0);
     }
     return self;
 }
@@ -525,6 +526,11 @@ const NSInteger AIRMapMaxZoomLevel = 20;
 }
 
 - (void)cacheViewIfNeeded {
+    // https://github.com/react-native-community/react-native-maps/issues/3100
+    // Do nothing if app is not active
+    if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateActive) {
+        return;
+    }
     if (self.hasShownInitialLoading) {
         if (!self.cacheEnabled) {
             if (_cacheImageView != nil) {
@@ -578,6 +584,14 @@ const NSInteger AIRMapMaxZoomLevel = 20;
 - (void)setLegalLabelInsets:(UIEdgeInsets)legalLabelInsets {
   _legalLabelInsets = legalLabelInsets;
   [self updateLegalLabelInsets];
+}
+
+- (void)setMapPadding:(UIEdgeInsets)mapPadding {
+  self.layoutMargins = mapPadding;
+}
+
+- (UIEdgeInsets)mapPadding {
+  return self.layoutMargins;
 }
 
 - (void)beginLoading {
@@ -636,6 +650,15 @@ const NSInteger AIRMapMaxZoomLevel = 20;
 - (void)layoutSubviews {
     [super layoutSubviews];
     [self cacheViewIfNeeded];
+    NSUInteger index = [[self subviews] indexOfObjectPassingTest:^BOOL(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *str = NSStringFromClass([obj class]);
+        return [str containsString:@"MKCompassView"];
+    }];
+    if (index != NSNotFound) {
+        UIView* compassButton;
+        compassButton = [self.subviews objectAtIndex:index];
+        compassButton.frame = CGRectMake(compassButton.frame.origin.x + _compassOffset.x, compassButton.frame.origin.y + _compassOffset.y, compassButton.frame.size.width, compassButton.frame.size.height);
+    }
 }
 
 @end

@@ -10,8 +10,8 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.location.Location;
 import android.os.Build;
-import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.view.MotionEventCompat;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.core.view.MotionEventCompat;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -46,6 +46,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.IndoorBuilding;
 import com.google.android.gms.maps.model.IndoorLevel;
+import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -54,6 +55,10 @@ import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.maps.model.TileOverlay;
+import com.google.android.gms.maps.model.VisibleRegion;
+import com.google.android.gms.maps.model.IndoorBuilding;
+import com.google.android.gms.maps.model.IndoorLevel;
 import com.google.maps.android.data.kml.KmlContainer;
 import com.google.maps.android.data.kml.KmlLayer;
 import com.google.maps.android.data.kml.KmlPlacemark;
@@ -72,7 +77,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import static android.support.v4.content.PermissionChecker.checkSelfPermission;
+import static androidx.core.content.PermissionChecker.checkSelfPermission;
 
 public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleMap.OnPoiClickListener, GoogleMap.OnIndoorStateChangeListener {
@@ -98,7 +103,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private AirMapCity lastCity;
   private AirMapCity lastCityWithMarkers;
   private boolean showingProviderMarkers;
-  AirMapPaddingListener paddingListener;
   /**
    * end of urbi-specific fields
    */
@@ -123,8 +127,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private final Map<Marker, AirMapMarker> markerMap = new HashMap<>();
   private final Map<Polyline, AirMapPolyline> polylineMap = new HashMap<>();
   private final Map<Polygon, AirMapPolygon> polygonMap = new HashMap<>();
-  private GestureDetectorCompat gestureDetector;
-  private AirMapManager manager;
+  private final Map<GroundOverlay, AirMapOverlay> overlayMap = new HashMap<>();
+  private final Map<TileOverlay, AirMapHeatmap> heatmapMap = new HashMap<>();
+  private final Map<TileOverlay, AirMapGradientPolyline> gradientPolylineMap = new HashMap<>();
+  private final GestureDetectorCompat gestureDetector;
+  private final AirMapManager manager;
   private LifecycleEventListener lifecycleListener;
   private boolean paused = false;
   private boolean destroyed = false;
@@ -166,15 +173,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     return superContext;
   }
 
-  public AirMapView(ThemedReactContext context) {
-    super(getNonBuggyContext(context, (ReactApplicationContext) context.getApplicationContext()), new GoogleMapOptions());
-
-    this.context = context;
-
-    super.onCreate(null);
-    initView();
-  }
-
   public AirMapView(ThemedReactContext reactContext, ReactApplicationContext appContext,
                     AirMapManager manager,
                     GoogleMapOptions googleMapOptions) {
@@ -206,6 +204,12 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
             if (handlePanDrag) {
               onPanDrag(e2);
             }
+            return false;
+          }
+
+          @Override
+          public boolean onDoubleTap(MotionEvent ev) {
+            onDoublePress(ev);
             return false;
           }
         });
@@ -294,8 +298,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         coordinate.putDouble("timestamp", location.getTime());
         coordinate.putDouble("accuracy", location.getAccuracy());
         coordinate.putDouble("speed", location.getSpeed());
-        if (android.os.Build.VERSION.SDK_INT >= 18) {
-          coordinate.putBoolean("isFromMockProvider", location.isFromMockProvider());
+        coordinate.putDouble("heading", location.getBearing());
+        if(android.os.Build.VERSION.SDK_INT >= 18){
+        coordinate.putBoolean("isFromMockProvider", location.isFromMockProvider());
         }
 
         event.putMap("coordinate", coordinate);
@@ -409,6 +414,15 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       }
     });
 
+    map.setOnGroundOverlayClickListener(new GoogleMap.OnGroundOverlayClickListener() {
+      @Override
+      public void onGroundOverlayClick(GroundOverlay groundOverlay) {
+        WritableMap event = makeClickEventData(groundOverlay.getPosition());
+        event.putString("action", "overlay-press");
+        manager.pushEvent(context, overlayMap.get(groundOverlay), "onPress", event);
+      }
+    });
+
     map.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
       @Override
       public void onCameraMoveStarted(int reason) {
@@ -491,6 +505,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       @Override
       public void onMapLoaded() {
         isMapLoaded = true;
+        manager.pushEvent(context, view, "onMapLoaded", new WritableNativeMap());
         AirMapView.this.cacheView();
       }
     });
@@ -774,6 +789,12 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       features.add(index, polylineView);
       Polyline polyline = (Polyline) polylineView.getFeature();
       polylineMap.put(polyline, polylineView);
+    } else if (child instanceof AirMapGradientPolyline) {
+      AirMapGradientPolyline polylineView = (AirMapGradientPolyline) child;
+      polylineView.addToMap(map);
+      features.add(index, polylineView);
+      TileOverlay tileOverlay = (TileOverlay) polylineView.getFeature();
+      gradientPolylineMap.put(tileOverlay, polylineView);
     } else if (child instanceof AirMapPolygon) {
       AirMapPolygon polygonView = (AirMapPolygon) child;
       polygonView.addToMap(map, this);
@@ -800,6 +821,14 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       AirMapOverlay overlayView = (AirMapOverlay) child;
       overlayView.addToMap(map, this);
       features.add(index, overlayView);
+      GroundOverlay overlay = (GroundOverlay) overlayView.getFeature();
+      overlayMap.put(overlay, overlayView);
+    } else if (child instanceof AirMapHeatmap) {
+      AirMapHeatmap heatmapView = (AirMapHeatmap) child;
+      heatmapView.addToMap(map);
+      features.add(index, heatmapView);
+      TileOverlay heatmap = (TileOverlay)heatmapView.getFeature();
+      heatmapMap.put(heatmap, heatmapView);
     } else if (child instanceof ViewGroup) {
       ViewGroup children = (ViewGroup) child;
       for (int i = 0; i < children.getChildCount(); i++) {
@@ -871,6 +900,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       if (this.selectedMarker != null && this.selectedMarker == feature) {
         setSelectedMarker(null);
       }
+    } else if (feature instanceof AirMapHeatmap) {
+      heatmapMap.remove(feature.getFeature());
     }
     feature.removeFromMap(map);
   }
@@ -1297,6 +1328,13 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
       }
     }
+  }
+
+  public void onDoublePress(MotionEvent ev) {
+    Point point = new Point((int) ev.getX(), (int) ev.getY());
+    LatLng coords = this.map.getProjection().fromScreenLocation(point);
+    WritableMap event = makeClickEventData(coords);
+    manager.pushEvent(context, this, "onDoublePress", event);
   }
 
   public void setKmlSrc(String kmlSrc) {
