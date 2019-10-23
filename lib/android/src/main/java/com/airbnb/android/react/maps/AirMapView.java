@@ -465,13 +465,14 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
               for (AirMapCity city : cities.values()) {
                 cityPins.put(map.addMarker(city.getMarker().getMarkerOptions()), city);
               }
+              addAllPolygons();
+              addAllPolylines();
             } else if (lastMaxLatLng > switchToCityPinsDelta && maxLatLng < switchToCityPinsDelta) {
               // switch to provider markers
               map.clear();
               // if we're still in the same city, add back all provider markers
               if (lastCityWithMarkers != null && lastCityWithMarkers.equals(newCity)) {
                 readdProviderMarkers();
-                showingProviderMarkers = true;
               } else if (newCity != null) {
                 markerMap.clear();
                 allMarkers.clear();
@@ -487,7 +488,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
             manager.pushEvent(context, view, "onCityChange", map);
             if (!showingProviderMarkers && maxLatLng < switchToCityPinsDelta && newCity != null && newCity.equals(lastCityWithMarkers)) {
               readdProviderMarkers();
-              showingProviderMarkers = true;
             } else if (newCity != null) {
               allMarkers.clear();
             }
@@ -566,6 +566,26 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
   }
 
+  private void addAllPolygons() {
+    Map<Polygon, AirMapPolygon> newMap = new HashMap<>();
+    for (AirMapPolygon polygon : polygonMap.values()) {
+      polygon.addToMap(map, this);
+      newMap.put((Polygon)(polygon.getFeature()), polygon);
+    }
+    polygonMap.clear();
+    polygonMap.putAll(newMap);
+  }
+
+  private void addAllPolylines() {
+    Map<Polyline, AirMapPolyline> newMap = new HashMap<>();
+    for (AirMapPolyline polyline : polylineMap.values()) {
+      polyline.addToMap(map, this);
+      newMap.put((Polyline)(polyline.getFeature()), polyline);
+    }
+    polylineMap.clear();
+    polylineMap.putAll(newMap);
+  }
+
   private void readdProviderMarkers() {
     markerMap.clear();
     for (AirMapMarker m : allMarkers) {
@@ -574,6 +594,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       if (marker != null)
         markerMap.put(marker, m);
     }
+    addAllPolygons();
+    addAllPolylines();
+    showingProviderMarkers = true;
   }
 
   private AirMapCity getCity(LatLngBounds bounds) {
@@ -903,6 +926,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       }
     } else if (feature instanceof AirMapHeatmap) {
       heatmapMap.remove(feature.getFeature());
+    } else if (feature instanceof AirMapPolygon) {
+      polygonMap.remove(feature.getFeature());
     }
     feature.removeFromMap(map);
   }
