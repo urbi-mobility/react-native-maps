@@ -11,6 +11,7 @@ import {
 import MapView, {
   Marker,
   ProviderPropType,
+  Polygon,
 } from 'react-native-maps';
 import berlinVehicleList from './assets/four-vehicles.json';
 import hamburgVehicleList from './assets/vehicles-hamburg.json';
@@ -71,6 +72,7 @@ class Urbi extends React.Component {
       city: 'berlin',
       showHeader: true,
       bottomOffset: offsets.ANCHOR,
+      hideArea: false,
     };
     this.coordinator = React.createRef();
     this.map = React.createRef();
@@ -84,6 +86,7 @@ class Urbi extends React.Component {
     this.onFilterPress = this.onFilterPress.bind(this);
     this.onStatusChange = this.onStatusChange.bind(this);
     this.onTest = this.onTest.bind(this);
+    this.renderPolygons = this.renderPolygons.bind(this);
   }
 
   onMapReady() {
@@ -91,10 +94,6 @@ class Urbi extends React.Component {
       const bookMe = this.state.markers[0];
       bookMe.selected = true;
       this.setState({ markers: [...this.state.markers], selected: bookMe.id });
-      setTimeout(() => {
-        bookMe.booked = true;
-        this.setState({ markers: [...this.state.markers] });
-      }, 1500);
     }, 1500);
   }
 
@@ -142,14 +141,27 @@ class Urbi extends React.Component {
   }
 
   onFilterPress() {
-    this.state.markers.forEach(m => {
-      m.off = Math.random() > 0.4;
-    });
-    this.setState({ markers: [...this.state.markers] });
+    this.setState({ hideArea: !this.state.hideArea });
   }
 
   onTest(value) {
     this.coordinator.current.setStatus(value);
+  }
+
+  renderPolygons() {
+    return this.state.city === 'berlin' && !this.state.hideArea ? [
+      <Polygon
+        key="p1"
+        fillColor="rgba(255, 0, 0, 0.2)"
+        strokeColor="red"
+        coordinates={[
+          { latitude: 52.521980, longitude: 13.40728 },
+          { latitude: 52.521980, longitude: 13.41299 },
+          { latitude: 52.520080, longitude: 13.41299 },
+          { latitude: 52.520080, longitude: 13.40728 },
+        ]}
+      />,
+    ] : undefined;
   }
 
   render() {
@@ -178,14 +190,18 @@ class Urbi extends React.Component {
           showsUserLocation
         >
           {this.state.markers.map(this.generateMarker)}
+          {this.renderPolygons()}
         </MapView>
         <View style={styles.filterButton}>
           <TouchableHighlight
             style={styles.centerButton}
             onPress={this.onFilterPress}
           >
-            <Text style={styles.locationButtonText}>filter</Text>
+            <Text style={styles.locationButtonText}>{this.state.hideArea ? 'Show' : 'Hide'} area</Text>
           </TouchableHighlight>
+        </View>
+        <View style={styles.overlay}>
+          <Text style={styles.text}>Current city: {this.state.city}</Text>
         </View>
         {this.state.selected && (
           <View style={styles.bottomPanel}>
@@ -227,8 +243,13 @@ const styles = StyleSheet.create({
     right: 0,
     width: '100%',
   },
+  overlay: {
+    position: 'absolute',
+    bottom: 10,
+    right: 0,
+  },
   text: {
-    textAlign: 'center'
+    textAlign: 'center',
   },
   item: {
     padding: 10,
