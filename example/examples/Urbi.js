@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  FlatList,
   Image,
   StyleSheet,
   Text,
@@ -8,13 +7,11 @@ import {
   TouchableHighlight,
   View,
 } from 'react-native';
-import NestedScrollView from 'react-native-nested-scroll-view';
 
 import MapView, {
-  BOTTOM_SHEET_TYPES,
-  CoordinatorView,
   Marker,
   ProviderPropType,
+  Polygon,
 } from 'react-native-maps';
 import berlinVehicleList from './assets/four-vehicles.json';
 import hamburgVehicleList from './assets/vehicles-hamburg.json';
@@ -75,6 +72,7 @@ class Urbi extends React.Component {
       city: 'berlin',
       showHeader: true,
       bottomOffset: offsets.ANCHOR,
+      hideArea: false,
     };
     this.coordinator = React.createRef();
     this.map = React.createRef();
@@ -85,10 +83,10 @@ class Urbi extends React.Component {
     this.generateMarker = this.generateMarker.bind(this);
     this.onCityChange = this.onCityChange.bind(this);
     this.onCenterPress = this.onCenterPress.bind(this);
-    this.onToggleHeaderPress = this.onToggleHeaderPress.bind(this);
     this.onFilterPress = this.onFilterPress.bind(this);
     this.onStatusChange = this.onStatusChange.bind(this);
     this.onTest = this.onTest.bind(this);
+    this.renderPolygons = this.renderPolygons.bind(this);
   }
 
   onMapReady() {
@@ -96,10 +94,6 @@ class Urbi extends React.Component {
       const bookMe = this.state.markers[0];
       bookMe.selected = true;
       this.setState({ markers: [...this.state.markers], selected: bookMe.id });
-      setTimeout(() => {
-        bookMe.booked = true;
-        this.setState({ markers: [...this.state.markers] });
-      }, 1500);
     }, 1500);
   }
 
@@ -119,7 +113,7 @@ class Urbi extends React.Component {
     return () => {
       const { selected } = this.state;
       if (selected) {
-        const [oldProvider, oldId] = selected.split(' - ') ;
+        const [oldProvider, oldId] = selected.split(' - ');
         const oldSelected = this.state.markers.find(m => m.provider === oldProvider && m.id === oldId);
         if (oldSelected) oldSelected.selected = false;
       }
@@ -127,7 +121,7 @@ class Urbi extends React.Component {
       const selectedMarker = this.state.markers.find(m => m.provider === provider && m.id === id);
       selectedMarker.selected = true;
       this.setState({ selected: key, markers: [...this.state.markers] });
-    }
+    };
   }
 
   onCityPress(e) {
@@ -146,161 +140,74 @@ class Urbi extends React.Component {
     this.map.current.centerToUserLocation();
   }
 
-  onToggleHeaderPress() {
-    this.setState({ showHeader: !this.state.showHeader });
-    this.coordinator.current.setShowHeader(!this.state.showHeader)
-  }
-
   onFilterPress() {
-    this.state.markers.forEach(m => {
-      m.off = Math.random() > 0.4;
-    });
-    this.setState({ markers: [...this.state.markers] });
+    this.setState({ hideArea: !this.state.hideArea });
   }
 
   onTest(value) {
     this.coordinator.current.setStatus(value);
   }
 
+  renderPolygons() {
+    return this.state.city === 'berlin' && !this.state.hideArea ? [
+      <Polygon
+        key="p1"
+        fillColor="rgba(255, 0, 0, 0.2)"
+        strokeColor="red"
+        coordinates={[
+          { latitude: 52.521980, longitude: 13.40728 },
+          { latitude: 52.521980, longitude: 13.41299 },
+          { latitude: 52.520080, longitude: 13.41299 },
+          { latitude: 52.520080, longitude: 13.40728 },
+        ]}
+      />,
+    ] : undefined;
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        <CoordinatorView
-          ref={this.coordinator}
-          style={{ flex: 1, width: '100%' }}
-          peekHeight={offsets.COLLAPSED}
-          anchorPoint={offsets.ANCHOR}
-          onStatusChange={this.onStatusChange}
+        <MapView
+          ref={this.map}
+          provider={this.props.provider}
+          style={StyleSheet.absoluteFillObject}
+          initialRegion={this.state.region}
+          onPress={this.onMapPress}
+          onMapReady={this.onMapReady}
+          moveOnMarkerPress={false}
+          mapPadding={{ bottom: this.state.bottomOffset }}
+          switchToCityPinsDelta={SWITCH_TO_PINS_LAT_LON_DELTA}
+          showsMyLocationButton={false}
+          cityPins={cityPins}
+          onCityPress={this.onCityPress}
+          onCityChange={this.onCityChange}
+          mapPadding={{
+            top: 0,
+            right: 0,
+            left: 0,
+            bottom: this.state.selected ? 200 : 0,
+          }}
+          showsUserLocation
         >
-          <MapView
-            ref={this.map}
-            provider={this.props.provider}
-            style={styles.map}
-            initialRegion={this.state.region}
-            onPress={this.onMapPress}
-            onMapReady={this.onMapReady}
-            moveOnMarkerPress={false}
-            mapPadding={{ bottom: this.state.bottomOffset }}
-            switchToCityPinsDelta={SWITCH_TO_PINS_LAT_LON_DELTA}
-            showsMyLocationButton={false}
-            cityPins={cityPins}
-            onCityPress={this.onCityPress}
-            onCityChange={this.onCityChange}
-            showsUserLocation
-          >
-            {this.state.markers.map(this.generateMarker)}
-          </MapView>
-
-          <NestedScrollView>
-            {this.state.selected ? (
-              <View style={styles.bottomPanel}>
-                <Text style={styles.text}>Selected: {this.state.selected}</Text>
-              </View>
-            ) : (
-              <View>
-                <Text
-                  style={{
-                    backgroundColor: 'red',
-                    height: 100,
-                    textAlign: 'center',
-                  }}
-                >
-                  TESTO 1
-                </Text>
-                <Text
-                  style={{
-                    backgroundColor: 'red',
-                    height: 100,
-                    textAlign: 'center',
-                  }}
-                >
-                  TESTO 1
-                </Text>
-                <FlatList
-                  data={[
-                    { key: 'Devin' },
-                    { key: 'Jackson' },
-                    { key: 'James' },
-                    { key: 'Joel' },
-                    { key: 'John' },
-                    { key: 'Jillian' },
-                    { key: 'Jimmy' },
-                    { key: 'Julie' },
-                    { key: 'A' },
-                    { key: 'B' },
-                    { key: 'C' },
-                    { key: 'D' },
-                    { key: 'F' },
-                    { key: 'G' },
-                    { key: 'H' },
-                    { key: 'Dq' },
-                    { key: 'Dvv' },
-                  ]}
-                  renderItem={({ item }) => (
-                    <Text style={styles.item}>{item.key}</Text>
-                  )}
-                />
-              </View>
-            )}
-          </NestedScrollView>
-          <View>
-              <Text
-                style={{
-                  backgroundColor: '#2e5263',
-                  padding: 20,
-                  textAlign: 'center',
-                  color: 'white',
-                }}
-              >
-                  header
-              </Text>
-          </View>
-        </CoordinatorView>
-        <View style={styles.toggleHeaderButton}>
-          <TouchableHighlight
-            style={styles.centerButton}
-            onPress={this.onToggleHeaderPress}
-          >
-            <Text style={styles.locationButtonText}>toggle header</Text>
-          </TouchableHighlight>
-        </View>
+          {this.state.markers.map(this.generateMarker)}
+          {this.renderPolygons()}
+        </MapView>
         <View style={styles.filterButton}>
           <TouchableHighlight
             style={styles.centerButton}
             onPress={this.onFilterPress}
           >
-            <Text style={styles.locationButtonText}>filter</Text>
+            <Text style={styles.locationButtonText}>{this.state.hideArea ? 'Show' : 'Hide'} area</Text>
           </TouchableHighlight>
         </View>
-        <View style={styles.thirdButton}>
-          <View style={styles.childRowContainer}>
-            <TouchableHighlight
-              style={styles.centerButtonMargin}
-              onPress={() => {
-                this.onTest(BOTTOM_SHEET_TYPES.EXPAND);
-              }}
-            >
-              <Text style={styles.locationButtonText}>EXPAND</Text>
-            </TouchableHighlight>
-
-            <TouchableHighlight
-              style={styles.centerButtonMargin}
-              onPress={() => {
-                this.onTest(BOTTOM_SHEET_TYPES.COLLAPSED);
-              }}
-            >
-              <Text style={styles.locationButtonText}>COLLAPSE</Text>
-            </TouchableHighlight>
-            <TouchableHighlight
-              style={styles.centerButtonMargin}
-              onPress={() => {
-                this.onTest(BOTTOM_SHEET_TYPES.ANCHOR);
-              }}
-            >
-              <Text style={styles.locationButtonText}>ANCHOR</Text>
-            </TouchableHighlight>
-          </View>
+        <View style={styles.overlay}>
+          <Text style={styles.text}>Current city: {this.state.city}</Text>
         </View>
+        {this.state.selected && (
+          <View style={styles.bottomPanel}>
+            <Text style={styles.text}>Selected: {this.state.selected}</Text>
+          </View>
+        )}
       </View>
     );
   }
@@ -312,12 +219,8 @@ Urbi.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
+    flex: 1,
     alignItems: 'center',
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
   },
   childContainer: {
     flexDirection: 'column',
@@ -331,8 +234,22 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   bottomPanel: {
+    position: 'absolute',
+    alignContent: 'center',
+    bottom: 0,
     backgroundColor: '#ffffff',
-    minHeight: 500,
+    height: 200,
+    left: 0,
+    right: 0,
+    width: '100%',
+  },
+  overlay: {
+    position: 'absolute',
+    bottom: 10,
+    right: 0,
+  },
+  text: {
+    textAlign: 'center',
   },
   item: {
     padding: 10,
