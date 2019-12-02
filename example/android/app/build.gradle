@@ -128,7 +128,7 @@ android {
 
 dependencies {
     implementation project(":react-native-maps-lib")
-    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
+    implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
 }

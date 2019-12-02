@@ -9,45 +9,6 @@ import {
   Switch,
 } from 'react-native';
 import { PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
-import DisplayLatLng from './examples/DisplayLatLng';
-import ViewsAsMarkers from './examples/ViewsAsMarkers';
-import EventListener from './examples/EventListener';
-import MarkerTypes from './examples/MarkerTypes';
-import DraggableMarkers from './examples/DraggableMarkers';
-import PolygonCreator from './examples/PolygonCreator';
-import PolylineCreator from './examples/PolylineCreator';
-import GradientPolylines from './examples/GradientPolylines';
-import AnimatedViews from './examples/AnimatedViews';
-import AnimatedMarkers from './examples/AnimatedMarkers';
-import Callouts from './examples/Callouts';
-import Overlays from './examples/Overlays';
-import DefaultMarkers from './examples/DefaultMarkers';
-import CustomMarkers from './examples/CustomMarkers';
-import CachedMap from './examples/CachedMap';
-import LoadingMap from './examples/LoadingMap';
-import MapBoundaries from './examples/MapBoundaries';
-import TakeSnapshot from './examples/TakeSnapshot';
-import FitToSuppliedMarkers from './examples/FitToSuppliedMarkers';
-import FitToCoordinates from './examples/FitToCoordinates';
-import LiteMapView from './examples/LiteMapView';
-import CustomTiles from './examples/CustomTiles';
-import WMSTiles from './examples/WMSTiles';
-import ZIndexMarkers from './examples/ZIndexMarkers';
-import StaticMap from './examples/StaticMap';
-import MapStyle from './examples/MapStyle';
-import LegalLabel from './examples/LegalLabel';
-import SetNativePropsOverlays from './examples/SetNativePropsOverlays';
-import CustomOverlay from './examples/CustomOverlay';
-import MapKml from './examples/MapKml';
-import BugMarkerWontUpdate from './examples/BugMarkerWontUpdate';
-import ImageOverlayWithAssets from './examples/ImageOverlayWithAssets';
-import ImageOverlayWithURL from './examples/ImageOverlayWithURL';
-import AnimatedNavigation from './examples/AnimatedNavigation';
-import OnPoiClick from './examples/OnPoiClick';
-import TestIdMarkers from './examples/TestIdMarkers';
-import IndoorMap from './examples/IndoorMap';
-import CameraControl from './examples/CameraControl';
-import MassiveCustomMarkers from './examples/MassiveCustomMarkers';
 import Urbi from './examples/Urbi';
 
 const IOS = Platform.OS === 'ios';
@@ -63,8 +24,7 @@ function makeExampleMapper(useGoogleMaps) {
   return example => example;
 }
 
-type Props = {};
-export default class App extends React.Component<Props> {
+export default class App extends React.Component {
   constructor(props) {
     super(props);
 
@@ -92,7 +52,7 @@ export default class App extends React.Component<Props> {
         style={styles.back}
         onPress={() => this.setState({ Component: null })}
       >
-        <Text style={{ fontWeight: 'bold', fontSize: 30 }}>&larr;</Text>
+        <Text style={styles.backButton}>&larr;</Text>
       </TouchableOpacity>
     );
   }
@@ -219,4 +179,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  backButton: { fontWeight: 'bold', fontSize: 30 },
+  googleSwitch: { marginBottom: 10 },
 });

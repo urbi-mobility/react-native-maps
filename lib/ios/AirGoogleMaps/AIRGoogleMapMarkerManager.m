@@ -25,8 +25,8 @@ RCT_EXPORT_MODULE()
 //  tapGestureRecognizer.cancelsTouchesInView = NO;
 //  [marker addGestureRecognizer:tapGestureRecognizer];
   marker.bridge = self.bridge;
-  marker.isAccessibilityElement = "YES";
-  marker.accessibilityElementsHidden = "NO";
+  marker.isAccessibilityElement = YES;
+  marker.accessibilityElementsHidden = NO;
   return marker;
 }
 
@@ -44,6 +44,7 @@ RCT_EXPORT_VIEW_PROPERTY(anchor, CGPoint)
 RCT_EXPORT_VIEW_PROPERTY(calloutAnchor, CGPoint)
 RCT_EXPORT_VIEW_PROPERTY(zIndex, NSInteger)
 RCT_EXPORT_VIEW_PROPERTY(draggable, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(flat, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(tracksViewChanges, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(tracksInfoWindowChanges, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(opacity, double)

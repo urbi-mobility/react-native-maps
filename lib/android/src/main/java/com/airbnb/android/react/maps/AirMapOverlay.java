@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import com.facebook.react.bridge.ReadableArray;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -18,6 +19,7 @@ public class AirMapOverlay extends AirMapFeature implements ImageReadable {
   private LatLngBounds bounds;
   private BitmapDescriptor iconBitmapDescriptor;
   private Bitmap iconBitmap;
+  private boolean tappable;
   private float zIndex;
   private float transparency;
 
@@ -56,6 +58,13 @@ public class AirMapOverlay extends AirMapFeature implements ImageReadable {
     this.mImageReader.setImage(uri);
   }
 
+  public void setTappable(boolean tapabble) {
+    this.tappable = tapabble;
+    if (groundOverlay != null) {
+      groundOverlay.setClickable(tappable);
+    }
+  }
+
 
   public GroundOverlayOptions getGroundOverlayOptions() {
     if (this.groundOverlayOptions == null) {
@@ -68,14 +77,19 @@ public class AirMapOverlay extends AirMapFeature implements ImageReadable {
     if (this.groundOverlayOptions != null) {
       return this.groundOverlayOptions;
     }
+    GroundOverlayOptions options = new GroundOverlayOptions();
     if (this.iconBitmapDescriptor != null) {
-      GroundOverlayOptions options = new GroundOverlayOptions();
       options.image(iconBitmapDescriptor);
-      options.positionFromBounds(bounds);
-      options.zIndex(zIndex);
-      return options;
+    } else {
+      // add stub image to be able to instantiate the overlay
+      // and store a reference to it in MapView
+      options.image(BitmapDescriptorFactory.defaultMarker());
+      // hide overlay until real image gets added
+      options.visible(false);
     }
-    return null;
+    options.positionFromBounds(bounds);
+    options.zIndex(zIndex);
+    return options;
   }
 
   @Override
@@ -88,7 +102,7 @@ public class AirMapOverlay extends AirMapFeature implements ImageReadable {
     GroundOverlayOptions groundOverlayOptions = getGroundOverlayOptions();
     if (groundOverlayOptions != null) {
       this.groundOverlay = map.addGroundOverlay(groundOverlayOptions);
-      this.groundOverlay.setClickable(true);
+      this.groundOverlay.setClickable(this.tappable);
     } else {
       this.map = map;
     }
@@ -119,8 +133,9 @@ public class AirMapOverlay extends AirMapFeature implements ImageReadable {
   public void update() {
     this.groundOverlay = getGroundOverlay();
     if (this.groundOverlay != null) {
+      this.groundOverlay.setVisible(true);
       this.groundOverlay.setImage(this.iconBitmapDescriptor);
-      this.groundOverlay.setClickable(true);
+      this.groundOverlay.setClickable(this.tappable);
     }
   }
 
