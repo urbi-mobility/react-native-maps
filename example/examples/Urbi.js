@@ -84,6 +84,7 @@ class Urbi extends React.Component {
     this.onCityChange = this.onCityChange.bind(this);
     this.onCenterPress = this.onCenterPress.bind(this);
     this.onFilterPress = this.onFilterPress.bind(this);
+    this.onDeselectPress = this.onDeselectPress.bind(this);
     this.onStatusChange = this.onStatusChange.bind(this);
     this.onTest = this.onTest.bind(this);
     this.renderPolygons = this.renderPolygons.bind(this);
@@ -98,6 +99,19 @@ class Urbi extends React.Component {
   }
 
   onMapPress() {
+    const { selected } = this.state;
+    if (selected) {
+      const [oldProvider, oldId] = selected.split(' - ');
+      const oldSelected = this.state.markers.find(
+        m => m.provider === oldProvider && m.id === oldId
+      );
+      if (oldSelected) {
+        ToastAndroid.show(
+          `${oldSelected.provider}-${oldSelected.id} deselected`,
+          ToastAndroid.SHORT);
+        oldSelected.selected = false;
+      }
+    }
     this.setState({ selected: null });
   }
 
@@ -114,13 +128,16 @@ class Urbi extends React.Component {
       const { selected } = this.state;
       if (selected) {
         const [oldProvider, oldId] = selected.split(' - ');
-        const oldSelected = this.state.markers.find(m => m.provider === oldProvider && m.id === oldId);
+        const oldSelected = this.state.markers.find(
+          m => m.provider === oldProvider && m.id === oldId
+        );
         if (oldSelected) oldSelected.selected = false;
       }
       const [provider, id] = key.split(' - ');
       const selectedMarker = this.state.markers.find(m => m.provider === provider && m.id === id);
       selectedMarker.selected = true;
-      this.setState({ selected: key, markers: [...this.state.markers] });
+      ToastAndroid.show(`new selection: ${key}`, ToastAndroid.SHORT);
+      this.setState({ selected: key });
     };
   }
 
@@ -132,7 +149,10 @@ class Urbi extends React.Component {
     const city = e.nativeEvent.city;
     ToastAndroid.show(`changed city to ${city}`, ToastAndroid.SHORT);
     if (city !== 'unset') {
-      this.setState({ markers: vehicleLists[city].vehicles, city });
+      this.setState({
+        markers: vehicleLists[city].vehicles.map(v => ({ ...v, selected: false })),
+        city,
+      });
     }
   }
 
@@ -142,6 +162,11 @@ class Urbi extends React.Component {
 
   onFilterPress() {
     this.setState({ hideArea: !this.state.hideArea });
+  }
+
+  onDeselectPress() {
+    this.onMapPress();
+    ToastAndroid.show('deselected', ToastAndroid.SHORT);
   }
 
   onTest(value) {
@@ -192,16 +217,21 @@ class Urbi extends React.Component {
           {this.state.markers.map(this.generateMarker)}
           {this.renderPolygons()}
         </MapView>
-        <View style={styles.filterButton}>
-          <TouchableHighlight
-            style={styles.centerButton}
-            onPress={this.onFilterPress}
-          >
-            <Text style={styles.locationButtonText}>{this.state.hideArea ? 'Show' : 'Hide'} area</Text>
-          </TouchableHighlight>
-        </View>
-        <View style={styles.overlay}>
-          <Text style={styles.text}>Current city: {this.state.city}</Text>
+        <View style={styles.buttonsFirstRow}>
+          <View style={styles.childRowContainer}>
+            <TouchableHighlight
+              style={styles.button}
+              onPress={this.onDeselectPress}
+            >
+              <Text style={styles.buttonLabel}>deselect</Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+              style={styles.button}
+              onPress={this.onFilterPress}
+            >
+              <Text style={styles.buttonLabel}>{this.state.hideArea ? 'Show' : 'Hide'} area</Text>
+            </TouchableHighlight>
+          </View>
         </View>
         {this.state.selected && (
           <View style={styles.bottomPanel}>
@@ -217,22 +247,20 @@ Urbi.propTypes = {
   provider: ProviderPropType,
 };
 
+const buttonRow = {
+  position: 'absolute',
+  right: 0,
+  justifyContent: 'center',
+  alignItems: 'flex-end',
+  borderRadius: 10,
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
   },
-  childContainer: {
-    flexDirection: 'column',
-    flex: 1,
-    width: '100%',
-    backgroundColor: 'green',
-  },
-  childRowContainer: {
-    flexDirection: 'row',
-    flex: 1,
-    width: '100%',
-  },
+  map: StyleSheet.absoluteFillObject,
   bottomPanel: {
     position: 'absolute',
     alignContent: 'center',
@@ -243,102 +271,40 @@ const styles = StyleSheet.create({
     right: 0,
     width: '100%',
   },
-  overlay: {
-    position: 'absolute',
-    bottom: 10,
-    right: 0,
+  childRowContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    width: '100%',
   },
-  text: {
-    textAlign: 'center',
+  buttonsFirstRow: {
+    ...buttonRow,
+    top: 10,
   },
-  item: {
+  buttonsSecondRow: {
+    ...buttonRow,
+    top: 45,
+  },
+  buttonsThirdRow: {
+    ...buttonRow,
+    top: 80,
+  },
+  buttonLabel: {
+    fontSize: 10,
+    color: '#ffffff',
+  },
+  button: {
+    backgroundColor: '#ec008b',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    alignItems: 'center',
+    margin: 5,
+  },
+  flatListItem: {
     padding: 10,
     fontSize: 18,
     height: 44,
     backgroundColor: 'blue',
-  },
-  toggleHeaderButton: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    height: 50,
-    width: 120,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    borderRadius: 10,
-  },
-  filterButton: {
-    position: 'absolute',
-    top: 70,
-    right: 20,
-    height: 50,
-    width: 50,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    borderRadius: 10,
-  },
-  thirdButton: {
-    position: 'absolute',
-    top: 120,
-    right: 0,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  locationButtonText: {
-    fontSize: 10,
-    color: '#ffffff',
-  },
-  centerButton: {
-    backgroundColor: '#ec008b',
-    padding: 10,
-    borderRadius: 10,
-  },
-  centerButtonMargin: {
-    backgroundColor: '#ec008b',
-    padding: 10,
-    borderRadius: 10,
-    margin: 5,
-  },
-  bubble: {
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 20,
-  },
-  latlng: {
-    width: 200,
-    alignItems: 'stretch',
-  },
-  button: {
-    width: 80,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    marginHorizontal: 10,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    marginVertical: 20,
-    backgroundColor: 'transparent',
-  },
-  spinner: {
-    position: 'absolute',
-    top: 50,
-    backgroundColor: '#fff',
-    borderRadius: 50,
-    padding: 8,
-  },
-  topBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: 8,
-    backgroundColor: '#ae016d',
   },
 });
 

@@ -53,6 +53,7 @@ public class AirMapMarker extends AirMapFeature {
   private String identifier;
 
   private boolean filteredOut;
+  private boolean selected;
 
   private LatLng position;
   private String title;
@@ -87,8 +88,6 @@ public class AirMapMarker extends AirMapFeature {
   private boolean tracksViewChanges = true;
   private boolean tracksViewChangesActive = false;
   private boolean hasViewChanges = true;
-
-  private boolean selected;
 
   private boolean hasCustomMarkerView = false;
   private final AirMapMarkerManager markerManager;
@@ -706,8 +705,15 @@ public class AirMapMarker extends AirMapFeature {
   }
 
   public void setSelected(boolean isSelected) {
+    if (mapView != null) {
+      if (this.selected && !isSelected) mapView.deselectIfSelected(this);
+      else if (isSelected) mapView.setSelectedMarker(this);
+    }
     this.selected = isSelected;
-    if (isSelected && mapView != null) mapView.setSelectedMarker(this);
+  }
+
+  public void setSelectedFromClick(boolean isSelected) {
+    this.selected = isSelected;
   }
 
   private Bitmap getScaledDownBitmap(Bitmap b) {

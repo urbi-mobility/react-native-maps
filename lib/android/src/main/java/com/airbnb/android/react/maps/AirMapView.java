@@ -401,7 +401,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         event.putString("action", "press");
         manager.pushEvent(context, view, "onPress", event);
         if (selectedMarker != null) {
-          setSelectedMarker(null);
+          selectedMarker.setSelected(false);
+          // setSelectedMarker(null);
         }
       }
     });
@@ -1559,14 +1560,22 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (this.selectedMarker == selectedMarker) return;
 
     if (this.selectedMarker != null) {
+      this.selectedMarker.setSelectedFromClick(false);
       scaleDown(this.selectedMarker);
     }
 
     if (selectedMarker != null) {
+      selectedMarker.setSelectedFromClick(true);
       setOriginalSize(selectedMarker);
     }
 
     this.selectedMarker = selectedMarker;
+  }
+
+  public void deselectIfSelected(final AirMapMarker selectedMarker) {
+    if (this.selectedMarker == selectedMarker) {
+      setSelectedMarker(null);
+    }
   }
 
   public void setPaddingListener(AirMapPaddingListener listener) {
