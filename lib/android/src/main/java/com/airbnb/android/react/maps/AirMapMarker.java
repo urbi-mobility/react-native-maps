@@ -471,14 +471,19 @@ public class AirMapMarker extends AirMapFeature {
   @Override
   public void addToMap(GoogleMap map, AirMapView view) {
     this.mapView = view;
-    marker = map.addMarker(getMarkerOptions());
-    marker.setTag("");
-    updateTracksViewChanges();
+    if (!filteredOut) {
+      marker = map.addMarker(getMarkerOptions());
+      marker.setTag("");
+      updateTracksViewChanges();
+    }
   }
 
   public void readdToMapIfNotFilteredOut() {
     if (!filteredOut && mapView != null) {
-      mapView.addMarkerToMap(this);
+      if (marker != null)
+        mapView.addMarkerToMap(this);
+      else
+        addToMap(mapView.map, mapView);
     }
   }
 

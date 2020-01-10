@@ -875,7 +875,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
     allMarkers.add(annotation);
 
-    if (mustShowProviderMarkers() && !annotation.isFilteredOut()) {
+    if (mustShowProviderMarkers()) {
       annotation.addToMap(map, this);
     }
     features.add(index, annotation);
