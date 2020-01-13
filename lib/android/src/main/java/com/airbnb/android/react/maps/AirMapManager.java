@@ -289,6 +289,16 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     view.setCityPins(cityPins);
   }
 
+  @ReactProp(name = "backendURL")
+  public void setBackendURL(AirMapView view, String backendURL) {
+    view.setBeURL(backendURL);
+  }
+
+  @ReactProp(name = "backendToken")
+  public void setBackendToken(AirMapView view, String backendToken) {
+    view.setAuth(backendToken);
+  }
+
   private void emitMapError(ThemedReactContext context, String message, String type) {
     WritableMap error = Arguments.createMap();
     error.putString("message", message);

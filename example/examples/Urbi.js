@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Image,
+  PermissionsAndroid,
   StyleSheet,
   Text,
   ToastAndroid,
@@ -88,6 +89,14 @@ class Urbi extends React.Component {
     this.onStatusChange = this.onStatusChange.bind(this);
     this.onTest = this.onTest.bind(this);
     this.renderPolygons = this.renderPolygons.bind(this);
+  }
+
+  UNSAFE_componentWillMount() {
+    PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then(
+      (granted) => {
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) this.onMapReady();
+      }
+    );
   }
 
   onMapReady() {
@@ -195,6 +204,8 @@ class Urbi extends React.Component {
         <MapView
           ref={this.map}
           provider={this.props.provider}
+          backendURL="https://urbitunnel2.eu.ngrok.io"
+          backendToken="fake"
           style={StyleSheet.absoluteFillObject}
           initialRegion={this.state.region}
           onPress={this.onMapPress}

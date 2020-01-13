@@ -1,13 +1,20 @@
 package com.airbnb.android.react.maps;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.text.StaticLayout;
+import android.text.TextPaint;
+import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.animation.ObjectAnimator;
@@ -38,9 +45,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Locale;
+import java.util.function.Consumer;
+
 import javax.annotation.Nullable;
 
 import static com.airbnb.android.react.maps.AirMapView.PIN_SCALE_FACTOR;
+import static java.lang.String.format;
+import static java.util.Locale.ENGLISH;
 
 public class AirMapMarker extends AirMapFeature {
 
@@ -421,9 +433,69 @@ public class AirMapMarker extends AirMapFeature {
     this.update(true);
   }
 
-  public void setIconFullSize(boolean isFullSize) {
-    iconBitmap = isFullSize ? originalIconBitmap : scaledDownBitmap;
-    iconBitmapDescriptor = isFullSize ? originalBitmapDescriptor : scaledDownBitmapDescriptor;
+  private static String formatTime(int seconds) {
+    if (seconds <= 60) return "< 1 min";
+    if (seconds < 3600) return format(ENGLISH,"%d min", seconds / 60);
+    return format(ENGLISH, "%d h", seconds / 3600);
+  }
+
+  private static String formatDistance(int meters) {
+    if (meters < 1000) return format(ENGLISH, "%dm", meters);
+    if (meters < 10000) return format(ENGLISH, "%.1fkm", meters / 1000.0);
+    return format(ENGLISH, "%dkm", meters / 1000);
+  }
+
+  @TargetApi(21)
+  private void addEstimatesToIcon(int seconds, int meters) {
+    if (selected) {
+
+      String text = format(Locale.getDefault(), "%s - %s", formatTime(seconds), formatDistance(meters));
+
+      Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+      bgPaint.setColor(Color.parseColor("#152934"));
+
+      float dp = getResources().getDisplayMetrics().density;
+
+      TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG | Paint.LINEAR_TEXT_FLAG);
+      textPaint.setStyle(Paint.Style.FILL);
+      textPaint.setColor(Color.WHITE);
+      textPaint.setTypeface(Typeface.SANS_SERIF);
+      textPaint.setFakeBoldText(true);
+      textPaint.setTextSize(12 * dp);
+      textPaint.setTextAlign(Paint.Align.LEFT);
+
+      float baseline = -textPaint.ascent();
+      int width = Math.max((int) (textPaint.measureText(text) + 0.5f + 8 * dp), originalIconBitmap.getWidth());
+      int height = (int) (baseline + textPaint.descent() + 0.5f) ;
+      float iconLeftPadding = (width - originalIconBitmap.getWidth()) / 2f + 0.5f;
+
+      Bitmap image = Bitmap.createBitmap(width, (int) (height + 8 * dp + originalIconBitmap.getHeight() +0.5f), Bitmap.Config.ARGB_8888);
+      Canvas canvas = new Canvas(image);
+      canvas.drawRoundRect(0, 0, width, height + 4 * dp, 4 * dp, 4 * dp, bgPaint);
+      canvas.drawText(text, 4 * dp, baseline + 2 * dp, textPaint);
+      canvas.drawBitmap(originalIconBitmap, iconLeftPadding, height + 8 * dp, null);
+
+      iconBitmap = image;
+      iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(iconBitmap);
+      hasViewChanges = true;
+      update(true);
+    }
+  }
+
+  public void setIconSelected(boolean isSelected) {
+    if (isSelected) {
+      mapView.fetchDirectionsTo(marker.getPosition(), new AirMapView.DirectionsCallback() {
+        @Override
+        public void accept(Integer timeEstimate, Integer distanceEstimate) {
+          addEstimatesToIcon(timeEstimate, distanceEstimate);
+        }
+      });
+      iconBitmap = originalIconBitmap;
+      iconBitmapDescriptor = originalBitmapDescriptor;
+    } else {
+      iconBitmap = scaledDownBitmap;
+      iconBitmapDescriptor = scaledDownBitmapDescriptor;
+    }
     this.hasViewChanges = true;
     this.update(true);
   }

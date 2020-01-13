@@ -224,6 +224,8 @@ declare module 'react-native-maps' {
     moveOnMarkerPress?: boolean;
     cityPins?: CityPin[];
     switchToCityPinsDelta?: number;
+    backendURL?: string;
+    backendToken?: string;
     showsScale?: boolean;
     showsBuildings?: boolean;
     showsTraffic?: boolean;

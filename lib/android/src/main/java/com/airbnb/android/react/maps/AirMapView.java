@@ -10,9 +10,15 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.location.Location;
 import android.os.Build;
+
+import androidx.annotation.NonNull;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.MotionEventCompat;
+
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.util.Pair;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -56,28 +62,43 @@ import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.maps.model.TileOverlay;
-import com.google.android.gms.maps.model.VisibleRegion;
-import com.google.android.gms.maps.model.IndoorBuilding;
-import com.google.android.gms.maps.model.IndoorLevel;
 import com.google.maps.android.data.kml.KmlContainer;
 import com.google.maps.android.data.kml.KmlLayer;
 import com.google.maps.android.data.kml.KmlPlacemark;
 import com.google.maps.android.data.kml.KmlStyle;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.internal.annotations.EverythingIsNonNull;
 
 import static androidx.core.content.PermissionChecker.checkSelfPermission;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Locale.ENGLISH;
 
 public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleMap.OnPoiClickListener, GoogleMap.OnIndoorStateChangeListener {
@@ -96,6 +117,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
    * urbi-specific fields
    */
   public static final double PIN_SCALE_FACTOR = 0.8;
+  private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
+  private static final MediaType MIME_JSON = MediaType.parse("application/json");
   private float switchToCityPinsDelta = Float.MAX_VALUE;
   private final Set<AirMapMarker> allMarkers = new HashSet<>();
   private final Map<LatLng, AirMapCity> cities = new HashMap<>();
@@ -103,6 +126,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private AirMapCity lastCity;
   private AirMapCity lastCityWithMarkers;
   private boolean showingProviderMarkers;
+  private String beURL = "";
+  private String auth = "";
+
   /**
    * end of urbi-specific fields
    */
@@ -249,7 +275,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       airMapMarker.getMarker().remove();
     }
     markerMap.remove(airMapMarker.getMarker());
-    airMapMarker.setIconFullSize(false);
+    airMapMarker.setIconSelected(false);
     if (mustShowProviderMarkers()) {
       airMapMarker.addToMap(map, this);
       markerMap.put(airMapMarker.getMarker(), airMapMarker);
@@ -267,7 +293,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
     markerMap.remove(airMapMarker.getMarker());
 
-    airMapMarker.setIconFullSize(true);
+    airMapMarker.setIconSelected(true);
     airMapMarker.addToMap(map, this);
     markerMap.put(airMapMarker.getMarker(), airMapMarker);
   }
@@ -1081,7 +1107,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
     boolean addedPosition = false;
 
-    List<String> markerIDList = Arrays.asList(markerIDs);
+    List<String> markerIDList = asList(markerIDs);
 
     for (AirMapFeature feature : features) {
       if (feature instanceof AirMapMarker) {
@@ -1587,8 +1613,101 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
 
     child.layout(0, 0, child.getMeasuredWidth(), child.getMeasuredHeight());
-
   }
+
+  public interface DirectionsCallback {
+    void accept(Integer timeEstimate, Integer distanceEstimate);
+  }
+
+  public void fetchDirectionsTo(final LatLng to, final DirectionsCallback callback) {
+    if (hasPermissions()) {
+      fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+        @Override
+        public void onSuccess(final Location from) {
+          final Handler mainHandler = new Handler(Looper.getMainLooper());
+          mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              try {
+                List<Pair<String, String>> params = asList(
+                    new Pair<>("origin", format(ENGLISH, "%.6f,%.6f", from.getLatitude(), from.getLongitude())),
+                    new Pair<>("destination", format(ENGLISH, "%.6f,%.6f", to.latitude, to.longitude)),
+                    new Pair<>("mode", "walking"),
+                    new Pair<>("avoid", "tolls|highways|ferries"),
+                    new Pair<>("language", "en")
+                );
+
+                StringBuilder builder = new StringBuilder();
+                for (Pair<String, String> param : params) {
+                  builder.append(param.first);
+                  builder.append("=");
+                  builder.append(URLEncoder.encode(param.second, "UTF-8"));
+                  builder.append("&");
+                }
+                builder.deleteCharAt(builder.length() - 1);
+
+                String url = format("%s/v3/legacy/maps/directions?%s", beURL, builder.toString());
+
+                Request request = new Request.Builder().url(url)
+                    .post(RequestBody.create(MIME_JSON, "{}"))
+                    .addHeader("Authorization", auth)
+                    .build();
+
+                HTTP_CLIENT.newCall(request).enqueue(new Callback() {
+                  @Override
+                  public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    e.printStackTrace();
+                  }
+
+                  @Override
+                  public void onResponse(@NonNull Call call, @NonNull final Response response) throws IOException {
+                    try {
+                      ResponseBody body = response.body();
+                      if (body != null) {
+                        // we'll catch any error in the try/catch. Yes, Exception, #yolo
+                        JSONObject leg = new JSONObject(body.string())
+                            .getJSONArray("routes")
+                            .getJSONObject(0)
+                            .getJSONArray("legs")
+                            .getJSONObject(0);
+
+                        final int seconds = leg.getJSONObject("duration").getInt("value");
+                        final int meters = leg.getJSONObject("distance").getInt("value");
+
+                        mainHandler.post(new Runnable() {
+                          @Override
+                          public void run() {
+                            callback.accept(seconds, meters);
+                          }
+                        });
+                      }
+                    } catch (Exception e2) {
+                      Log.e("urbi", "unexpected format", e2);
+                    }
+                  }
+                });
+              } catch (Exception encodingException) {
+                encodingException.printStackTrace();
+              }
+            }
+          });
+        }
+      });
+    } else {
+      Log.d("urbi", "user has given no location permissions");
+    }
+  }
+
+  public AirMapView setBeURL(String beURL) {
+    this.beURL = beURL;
+    return this;
+  }
+
+  public AirMapView setAuth(String auth) {
+    this.auth = auth;
+    return this;
+  }
+
 
   interface AirMapPaddingListener {
     void forceLayout();
