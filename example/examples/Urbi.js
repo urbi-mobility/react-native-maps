@@ -206,6 +206,7 @@ class Urbi extends React.Component {
           provider={this.props.provider}
           backendURL="https://urbitunnel2.eu.ngrok.io"
           backendToken="fake"
+          showPathIfCloserThan={1800}
           style={StyleSheet.absoluteFillObject}
           initialRegion={this.state.region}
           onPress={this.onMapPress}

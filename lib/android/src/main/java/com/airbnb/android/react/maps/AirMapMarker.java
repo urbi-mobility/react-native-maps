@@ -36,6 +36,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.*;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +55,7 @@ public class AirMapMarker extends AirMapFeature {
   static Polyline path;
 
   private static final List<PatternItem> PATH_PATTERN = Arrays.asList(new Dot(), new Gap(20));
+  private static final DecimalFormat ONE_DECIMAL_IF_NEEDED = new DecimalFormat("##.#");
 
   private MarkerOptions markerOptions;
   private AirMapView mapView;
@@ -441,15 +443,15 @@ public class AirMapMarker extends AirMapFeature {
 
   private static String formatDistance(int meters) {
     if (meters < 1000) return format(ENGLISH, "%dm", meters);
-    if (meters < 10000) return format(ENGLISH, "%.1fkm", meters / 1000.0);
-    return format(ENGLISH, "%dkm", meters / 1000);
+    return format(ENGLISH, "%skm", ONE_DECIMAL_IF_NEEDED.format(meters / 1000.0));
   }
 
   @TargetApi(21)
   private void addEstimatesToIcon(int seconds, int meters) {
     if (selected) {
 
-      String text = format(Locale.getDefault(), "%s - %s", formatTime(seconds), formatDistance(meters));
+      int threshold = mapView.getShowPathIfCloserThanSeconds();
+      String text = seconds >= threshold ? formatDistance(meters) : format(Locale.getDefault(), "%s - %s", formatTime(seconds), formatDistance(meters));
 
       Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
       bgPaint.setColor(Color.parseColor("#152934"));
@@ -462,7 +464,7 @@ public class AirMapMarker extends AirMapFeature {
       textPaint.setTypeface(Typeface.SANS_SERIF);
       textPaint.setFakeBoldText(true);
       textPaint.setTextSize(12 * dp);
-      textPaint.setTextAlign(Paint.Align.LEFT);
+      textPaint.setTextAlign(Paint.Align.CENTER);
 
       float baseline = -textPaint.ascent();
       int width = Math.max((int) (textPaint.measureText(text) + 0.5f + 8 * dp), originalIconBitmap.getWidth());
@@ -482,9 +484,9 @@ public class AirMapMarker extends AirMapFeature {
       canvas.drawPath(path, bgPaint);
 
       canvas.drawRoundRect(0, 0, width, textHeight + 4 * dp, 4 * dp, 4 * dp, bgPaint);
-      canvas.drawText(text, 4 * dp, baseline + 2 * dp, textPaint);
+      canvas.drawText(text, width / 2f, baseline + 2 * dp, textPaint);
 
-      // selectioon oval at the bottom
+      // selection oval at the bottom
       canvas.drawOval(width / 2f - 6 * dp, image.getHeight() - 8 * dp, width / 2f + 6 * dp, image.getHeight(), bgPaint);
       canvas.drawBitmap(originalIconBitmap, iconLeftPadding, textHeight + 10 * dp, null);
 
@@ -514,7 +516,9 @@ public class AirMapMarker extends AirMapFeature {
         @Override
         public void accept(Integer timeEstimate, Integer distanceEstimate, String polyline) {
           addEstimatesToIcon(timeEstimate, distanceEstimate);
-          addPathToIcon(polyline);
+          if (timeEstimate < mapView.getShowPathIfCloserThanSeconds()) {
+            addPathToIcon(polyline);
+          }
         }
       });
       iconBitmap = originalIconBitmap;

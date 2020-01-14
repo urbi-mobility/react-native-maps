@@ -128,6 +128,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private boolean showingProviderMarkers;
   private String beURL = "";
   private String auth = "";
+  private int showPathIfCloserThanSeconds;
 
   /**
    * end of urbi-specific fields
@@ -1721,6 +1722,14 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     return this;
   }
 
+  public int getShowPathIfCloserThanSeconds() {
+    return showPathIfCloserThanSeconds;
+  }
+
+  public AirMapView setShowPathIfCloserThanSeconds(int showPathIfCloserThanSeconds) {
+    this.showPathIfCloserThanSeconds = showPathIfCloserThanSeconds;
+    return this;
+  }
 
   interface AirMapPaddingListener {
     void forceLayout();

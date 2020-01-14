@@ -299,6 +299,11 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     view.setAuth(backendToken);
   }
 
+  @ReactProp(name = "showPathIfCloserThanSeconds")
+  public void setShowPathIfCloserThanSeconds(AirMapView view, float seconds) {
+    view.setShowPathIfCloserThanSeconds((int) seconds);
+  }
+
   private void emitMapError(ThemedReactContext context, String message, String type) {
     WritableMap error = Arguments.createMap();
     error.putString("message", message);

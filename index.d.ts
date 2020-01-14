@@ -226,6 +226,7 @@ declare module 'react-native-maps' {
     switchToCityPinsDelta?: number;
     backendURL?: string;
     backendToken?: string;
+    showPathIfCloserThanSeconds?: number;
     showsScale?: boolean;
     showsBuildings?: boolean;
     showsTraffic?: boolean;
