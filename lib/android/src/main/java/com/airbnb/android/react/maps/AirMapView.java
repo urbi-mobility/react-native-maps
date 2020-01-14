@@ -588,12 +588,14 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   }
 
   private void centerCameraTo(final LatLng position, final int delayMs, Integer newZoomLevel) {
-    if (newZoomLevel != null) {
-      map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, newZoomLevel));
-    } else {
-      map.animateCamera(
-          CameraUpdateFactory.newLatLng(position),
-          delayMs, null);
+    if (map != null) {
+      if (newZoomLevel != null) {
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, newZoomLevel));
+      } else {
+        map.animateCamera(
+            CameraUpdateFactory.newLatLng(position),
+            delayMs, null);
+      }
     }
   }
 

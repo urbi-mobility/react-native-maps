@@ -9,11 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import MapView, {
-  Marker,
-  ProviderPropType,
-  Polygon,
-} from 'react-native-maps';
+import MapView, { Marker, ProviderPropType, Polygon } from 'react-native-maps';
 import berlinVehicleList from './assets/four-vehicles.json';
 import hamburgVehicleList from './assets/vehicles-hamburg.json';
 import cityList from './assets/cities.json';
@@ -50,7 +46,7 @@ class Urbi extends React.Component {
       key={v.id}
       centerOffset={{ x: 0, y: -19.5 }}
       coordinate={{ latitude: v.location.lat, longitude: v.location.lon }}
-      image={v.booked ? pins.flagPink : pins[`ic_pin_${v.provider}`]}
+      image={pins[`ic_pin_${v.provider}${v.booked ? '_highlighted' : ''}`]}
       onPress={this.onMarkerPress(`${v.provider} - ${v.id}`)}
       tracksViewChanges={false}
       off={v.off}
@@ -89,14 +85,17 @@ class Urbi extends React.Component {
     this.onStatusChange = this.onStatusChange.bind(this);
     this.onTest = this.onTest.bind(this);
     this.renderPolygons = this.renderPolygons.bind(this);
+    this.onToggleHighlight = this.onToggleHighlight.bind(this);
   }
 
   UNSAFE_componentWillMount() {
-    PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then(
-      (granted) => {
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) this.onMapReady();
+    PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ).then(granted => {
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        this.onMapReady();
       }
-    );
+    });
   }
 
   onMapReady() {
@@ -117,7 +116,8 @@ class Urbi extends React.Component {
       if (oldSelected) {
         ToastAndroid.show(
           `${oldSelected.provider}-${oldSelected.id} deselected`,
-          ToastAndroid.SHORT);
+          ToastAndroid.SHORT
+        );
         oldSelected.selected = false;
       }
     }
@@ -140,10 +140,14 @@ class Urbi extends React.Component {
         const oldSelected = this.state.markers.find(
           m => m.provider === oldProvider && m.id === oldId
         );
-        if (oldSelected) oldSelected.selected = false;
+        if (oldSelected) {
+          oldSelected.selected = false;
+        }
       }
       const [provider, id] = key.split(' - ');
-      const selectedMarker = this.state.markers.find(m => m.provider === provider && m.id === id);
+      const selectedMarker = this.state.markers.find(
+        m => m.provider === provider && m.id === id
+      );
       selectedMarker.selected = true;
       ToastAndroid.show(`new selection: ${key}`, ToastAndroid.SHORT);
       this.setState({ selected: key });
@@ -159,7 +163,10 @@ class Urbi extends React.Component {
     ToastAndroid.show(`changed city to ${city}`, ToastAndroid.SHORT);
     if (city !== 'unset') {
       this.setState({
-        markers: vehicleLists[city].vehicles.map(v => ({ ...v, selected: false })),
+        markers: vehicleLists[city].vehicles.map(v => ({
+          ...v,
+          selected: false,
+        })),
         city,
       });
     }
@@ -178,24 +185,37 @@ class Urbi extends React.Component {
     ToastAndroid.show('deselected', ToastAndroid.SHORT);
   }
 
+  onToggleHighlight() {
+    const [first, second, ...others] = this.state.markers;
+    this.setState({
+      markers: [
+        first,
+        { ...second, booked: !(second.booked || false) },
+        ...others,
+      ],
+    });
+  }
+
   onTest(value) {
     this.coordinator.current.setStatus(value);
   }
 
   renderPolygons() {
-    return this.state.city === 'berlin' && !this.state.hideArea ? [
-      <Polygon
-        key="p1"
-        fillColor="rgba(255, 0, 0, 0.2)"
-        strokeColor="red"
-        coordinates={[
-          { latitude: 52.521980, longitude: 13.40728 },
-          { latitude: 52.521980, longitude: 13.41299 },
-          { latitude: 52.520080, longitude: 13.41299 },
-          { latitude: 52.520080, longitude: 13.40728 },
-        ]}
-      />,
-    ] : undefined;
+    return this.state.city === 'berlin' && !this.state.hideArea
+      ? [
+          <Polygon
+            key="p1"
+            fillColor="rgba(255, 0, 0, 0.2)"
+            strokeColor="red"
+            coordinates={[
+              { latitude: 52.52198, longitude: 13.40728 },
+              { latitude: 52.52198, longitude: 13.41299 },
+              { latitude: 52.52008, longitude: 13.41299 },
+              { latitude: 52.52008, longitude: 13.40728 },
+            ]}
+          />,
+        ]
+      : undefined;
   }
 
   render() {
@@ -212,7 +232,6 @@ class Urbi extends React.Component {
           onPress={this.onMapPress}
           onMapReady={this.onMapReady}
           moveOnMarkerPress={false}
-          mapPadding={{ bottom: this.state.bottomOffset }}
           switchToCityPinsDelta={SWITCH_TO_PINS_LAT_LON_DELTA}
           showsMyLocationButton={false}
           cityPins={cityPins}
@@ -241,7 +260,15 @@ class Urbi extends React.Component {
               style={styles.button}
               onPress={this.onFilterPress}
             >
-              <Text style={styles.buttonLabel}>{this.state.hideArea ? 'Show' : 'Hide'} area</Text>
+              <Text style={styles.buttonLabel}>
+                {this.state.hideArea ? 'show' : 'hide'} area
+              </Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+              style={styles.button}
+              onPress={this.onToggleHighlight}
+            >
+              <Text style={styles.buttonLabel}>toggle booked</Text>
             </TouchableHighlight>
           </View>
         </View>

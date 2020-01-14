@@ -45,6 +45,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import static com.airbnb.android.react.maps.AirMapView.PIN_SCALE_FACTOR;
+import static com.airbnb.android.react.maps.AirMapView.map;
 import static com.airbnb.android.react.maps.PolylineUtils.decodePoly;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
@@ -53,6 +54,8 @@ public class AirMapMarker extends AirMapFeature {
 
   static PolylineOptions pathOptions;
   static Polyline path;
+  static int lastTimeEstimate;
+  static int lastDistanceEstimate;
 
   private static final List<PatternItem> PATH_PATTERN = Arrays.asList(new Dot(), new Gap(20));
   private static final DecimalFormat ONE_DECIMAL_IF_NEEDED = new DecimalFormat("##.#");
@@ -144,7 +147,12 @@ public class AirMapMarker extends AirMapFeature {
             AirMapMarker.this.markerManager.getSharedIcon(AirMapMarker.this.imageUri)
                 .updateIcon(scaledDownBitmapDescriptor, scaledDownBitmap, originalBitmapDescriptor, originalIconBitmap);
           }
-          update(true);
+
+          if (selected) {
+            drawEstimatesAndPath(lastTimeEstimate, lastDistanceEstimate);
+          } else {
+            update(true);
+          }
         }
       };
 
@@ -376,6 +384,9 @@ public class AirMapMarker extends AirMapFeature {
 
     this.imageUri = uri;
     if (!shouldLoadImage) {
+      if (selected) {
+        drawEstimatesAndPath(lastTimeEstimate, lastDistanceEstimate);
+      }
       return;
     }
 
@@ -450,6 +461,9 @@ public class AirMapMarker extends AirMapFeature {
   private void addEstimatesToIcon(int seconds, int meters) {
     if (selected) {
 
+      lastDistanceEstimate = meters;
+      lastTimeEstimate = seconds;
+
       int threshold = mapView.getShowPathIfCloserThanSeconds();
       String text = seconds >= threshold ? formatDistance(meters) : format(Locale.getDefault(), "%s - %s", formatTime(seconds), formatDistance(meters));
 
@@ -497,28 +511,31 @@ public class AirMapMarker extends AirMapFeature {
     }
   }
 
-  private void addPathToIcon(String encodedPoints) {
+  private PolylineOptions pathToIcon(String encodedPoints) {
     List<LatLng> points = decodePoly(encodedPoints);
 
-    pathOptions = new PolylineOptions()
+    return new PolylineOptions()
         .addAll(points)
         .color(Color.parseColor("#152934"))
         .geodesic(true)
         .pattern(PATH_PATTERN)
         .geodesic(true);
+  }
 
-    path = mapView.map.addPolyline(pathOptions);
+  private void drawEstimatesAndPath(Integer time, Integer distance) {
+    addEstimatesToIcon(time, distance);
+    if (time < mapView.getShowPathIfCloserThanSeconds()) {
+      path = map.addPolyline(pathOptions);
+    }
   }
 
   public void setIconSelected(boolean isSelected) {
-    if (isSelected) {
+    if (isSelected && marker != null) {
       mapView.fetchDirectionsTo(marker.getPosition(), new AirMapView.DirectionsCallback() {
         @Override
         public void accept(Integer timeEstimate, Integer distanceEstimate, String polyline) {
-          addEstimatesToIcon(timeEstimate, distanceEstimate);
-          if (timeEstimate < mapView.getShowPathIfCloserThanSeconds()) {
-            addPathToIcon(polyline);
-          }
+          pathOptions = pathToIcon(polyline);
+          drawEstimatesAndPath(timeEstimate, distanceEstimate);
         }
       });
       iconBitmap = originalIconBitmap;
@@ -590,7 +607,7 @@ public class AirMapMarker extends AirMapFeature {
       if (marker != null)
         mapView.addMarkerToMap(this);
       else
-        addToMap(mapView.map, mapView);
+        addToMap(map, mapView);
     }
   }
 
