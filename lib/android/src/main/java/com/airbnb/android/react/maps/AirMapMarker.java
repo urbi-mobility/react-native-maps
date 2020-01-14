@@ -2,12 +2,7 @@ package com.airbnb.android.react.maps;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Typeface;
+import android.graphics.*;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -471,14 +466,27 @@ public class AirMapMarker extends AirMapFeature {
 
       float baseline = -textPaint.ascent();
       int width = Math.max((int) (textPaint.measureText(text) + 0.5f + 8 * dp), originalIconBitmap.getWidth());
-      int height = (int) (baseline + textPaint.descent() + 0.5f) ;
+      int textHeight = (int) (baseline + textPaint.descent() + 0.5f) ;
       float iconLeftPadding = (width - originalIconBitmap.getWidth()) / 2f + 0.5f;
 
-      Bitmap image = Bitmap.createBitmap(width, (int) (height + 8 * dp + originalIconBitmap.getHeight() +0.5f), Bitmap.Config.ARGB_8888);
+      Bitmap image = Bitmap.createBitmap(width, (int) (textHeight + 11 * dp + originalIconBitmap.getHeight() +0.5f), Bitmap.Config.ARGB_8888);
       Canvas canvas = new Canvas(image);
-      canvas.drawRoundRect(0, 0, width, height + 4 * dp, 4 * dp, 4 * dp, bgPaint);
+
+      // little callout thingy
+      Path path = new Path();
+      path.setFillType(Path.FillType.EVEN_ODD);
+      path.moveTo(width / 2f - 6 * dp, textHeight + 3 * dp - 0.5f);
+      path.lineTo(width / 2f, textHeight + 8 * dp);
+      path.lineTo(width / 2f + 6 * dp, textHeight + 3 * dp - 0.5f);
+      path.close();
+      canvas.drawPath(path, bgPaint);
+
+      canvas.drawRoundRect(0, 0, width, textHeight + 4 * dp, 4 * dp, 4 * dp, bgPaint);
       canvas.drawText(text, 4 * dp, baseline + 2 * dp, textPaint);
-      canvas.drawBitmap(originalIconBitmap, iconLeftPadding, height + 8 * dp, null);
+
+      // selectioon oval at the bottom
+      canvas.drawOval(width / 2f - 6 * dp, image.getHeight() - 8 * dp, width / 2f + 6 * dp, image.getHeight(), bgPaint);
+      canvas.drawBitmap(originalIconBitmap, iconLeftPadding, textHeight + 10 * dp, null);
 
       iconBitmap = image;
       iconBitmapDescriptor = BitmapDescriptorFactory.fromBitmap(iconBitmap);
