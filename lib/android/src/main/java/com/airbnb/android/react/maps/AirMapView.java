@@ -102,7 +102,7 @@ import static java.util.Locale.ENGLISH;
 
 public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleMap.OnPoiClickListener, GoogleMap.OnIndoorStateChangeListener {
-  public GoogleMap map;
+  public static GoogleMap map;
   private FusedLocationProviderClient fusedLocationClient;
   private KmlLayer kmlLayer;
   private ProgressBar mapLoadingProgressBar;
@@ -220,7 +220,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     super.onCreate(null);
     // TODO(lmr): what about onStart????
     super.onResume();
-    super.getMapAsync(this);
+    if (map == null) {
+      super.getMapAsync(this);
+    }
     final AirMapView view = this;
     gestureDetector =
         new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
