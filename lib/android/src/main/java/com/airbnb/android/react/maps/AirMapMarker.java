@@ -39,22 +39,26 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
 import static com.airbnb.android.react.maps.AirMapView.PIN_SCALE_FACTOR;
+import static com.airbnb.android.react.maps.PolylineUtils.decodePoly;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 
 public class AirMapMarker extends AirMapFeature {
+
+  static PolylineOptions pathOptions;
+  static Polyline path;
+
+  private static final List<PatternItem> PATH_PATTERN = Arrays.asList(new Dot(), new Gap(20));
 
   private MarkerOptions markerOptions;
   private AirMapView mapView;
@@ -436,6 +440,7 @@ public class AirMapMarker extends AirMapFeature {
   private static String formatTime(int seconds) {
     if (seconds <= 60) return "< 1 min";
     if (seconds < 3600) return format(ENGLISH,"%d min", seconds / 60);
+    if (seconds < 36000) return format(ENGLISH, "%dh%dm", seconds / 3600, (seconds % 3600) / 60);
     return format(ENGLISH, "%d h", seconds / 3600);
   }
 
@@ -482,17 +487,35 @@ public class AirMapMarker extends AirMapFeature {
     }
   }
 
+  private void addPathToIcon(String encodedPoints) {
+    List<LatLng> points = decodePoly(encodedPoints);
+
+    pathOptions = new PolylineOptions()
+        .addAll(points)
+        .color(Color.parseColor("#152934"))
+        .geodesic(true)
+        .pattern(PATH_PATTERN)
+        .geodesic(true);
+
+    path = mapView.map.addPolyline(pathOptions);
+  }
+
   public void setIconSelected(boolean isSelected) {
     if (isSelected) {
       mapView.fetchDirectionsTo(marker.getPosition(), new AirMapView.DirectionsCallback() {
         @Override
-        public void accept(Integer timeEstimate, Integer distanceEstimate) {
+        public void accept(Integer timeEstimate, Integer distanceEstimate, String polyline) {
           addEstimatesToIcon(timeEstimate, distanceEstimate);
+          addPathToIcon(polyline);
         }
       });
       iconBitmap = originalIconBitmap;
       iconBitmapDescriptor = originalBitmapDescriptor;
     } else {
+      if (path != null) {
+        path.remove();
+        pathOptions = null;
+      }
       iconBitmap = scaledDownBitmap;
       iconBitmapDescriptor = scaledDownBitmapDescriptor;
     }

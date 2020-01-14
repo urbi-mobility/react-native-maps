@@ -494,6 +494,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
               }
               addAllPolygons();
               addAllPolylines();
+              readdPathToSelected();
             } else if (lastMaxLatLng > switchToCityPinsDelta && maxLatLng < switchToCityPinsDelta) {
               // switch to provider markers
               map.clear();
@@ -623,7 +624,14 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
     addAllPolygons();
     addAllPolylines();
+    readdPathToSelected();
     showingProviderMarkers = true;
+  }
+
+  private void readdPathToSelected() {
+    if (AirMapMarker.pathOptions != null) {
+      AirMapMarker.path = map.addPolyline(AirMapMarker.pathOptions);
+    }
   }
 
   private AirMapCity getCity(LatLngBounds bounds) {
@@ -1616,7 +1624,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   }
 
   public interface DirectionsCallback {
-    void accept(Integer timeEstimate, Integer distanceEstimate);
+    void accept(Integer timeEstimate, Integer distanceEstimate, String polyline);
   }
 
   public void fetchDirectionsTo(final LatLng to, final DirectionsCallback callback) {
@@ -1665,19 +1673,22 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
                       ResponseBody body = response.body();
                       if (body != null) {
                         // we'll catch any error in the try/catch. Yes, Exception, #yolo
-                        JSONObject leg = new JSONObject(body.string())
+                        JSONObject route = new JSONObject(body.string())
                             .getJSONArray("routes")
-                            .getJSONObject(0)
+                            .getJSONObject(0);
+
+                        JSONObject leg = route
                             .getJSONArray("legs")
                             .getJSONObject(0);
 
                         final int seconds = leg.getJSONObject("duration").getInt("value");
                         final int meters = leg.getJSONObject("distance").getInt("value");
+                        final String polyline = route.getJSONObject("overview_polyline").getString("points");
 
                         mainHandler.post(new Runnable() {
                           @Override
                           public void run() {
-                            callback.accept(seconds, meters);
+                            callback.accept(seconds, meters, polyline);
                           }
                         });
                       }
