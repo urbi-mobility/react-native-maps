@@ -52,10 +52,10 @@ import static java.util.Locale.ENGLISH;
 
 public class AirMapMarker extends AirMapFeature {
 
-  static PolylineOptions pathOptions;
-  static Polyline path;
-  static int lastTimeEstimate;
-  static int lastDistanceEstimate;
+  private static Polyline path;
+  private static int lastTimeEstimate;
+  private static int lastDistanceEstimate;
+  private static PolylineOptions lastPathOptions;
 
   private static final List<PatternItem> PATH_PATTERN = Arrays.asList(new Dot(), new Gap(20));
   private static final DecimalFormat ONE_DECIMAL_IF_NEEDED = new DecimalFormat("##.#");
@@ -149,7 +149,7 @@ public class AirMapMarker extends AirMapFeature {
           }
 
           if (selected) {
-            drawEstimatesAndPath(lastTimeEstimate, lastDistanceEstimate);
+            drawEstimatesAndPath(lastTimeEstimate, lastDistanceEstimate, lastPathOptions);
           } else {
             update(true);
           }
@@ -385,7 +385,7 @@ public class AirMapMarker extends AirMapFeature {
     this.imageUri = uri;
     if (!shouldLoadImage) {
       if (selected) {
-        drawEstimatesAndPath(lastTimeEstimate, lastDistanceEstimate);
+        drawEstimatesAndPath(lastTimeEstimate, lastDistanceEstimate, lastPathOptions);
       }
       return;
     }
@@ -522,10 +522,17 @@ public class AirMapMarker extends AirMapFeature {
         .geodesic(true);
   }
 
-  private void drawEstimatesAndPath(Integer time, Integer distance) {
+  private void drawEstimatesAndPath(Integer time, Integer distance, PolylineOptions pathOptions) {
+    if (path != null) {
+      path.remove();
+      path = null;
+    }
     addEstimatesToIcon(time, distance);
     if (time < mapView.getShowPathIfCloserThanSeconds()) {
-      path = map.addPolyline(pathOptions);
+      if (pathOptions != null) {
+        lastPathOptions = pathOptions;
+        path = map.addPolyline(pathOptions);
+      }
     }
   }
 
@@ -534,8 +541,7 @@ public class AirMapMarker extends AirMapFeature {
       mapView.fetchDirectionsTo(marker.getPosition(), new AirMapView.DirectionsCallback() {
         @Override
         public void accept(Integer timeEstimate, Integer distanceEstimate, String polyline) {
-          pathOptions = pathToIcon(polyline);
-          drawEstimatesAndPath(timeEstimate, distanceEstimate);
+          drawEstimatesAndPath(timeEstimate, distanceEstimate, pathToIcon(polyline));
         }
       });
       iconBitmap = originalIconBitmap;
@@ -543,7 +549,7 @@ public class AirMapMarker extends AirMapFeature {
     } else {
       if (path != null) {
         path.remove();
-        pathOptions = null;
+        path = null;
       }
       iconBitmap = scaledDownBitmap;
       iconBitmapDescriptor = scaledDownBitmapDescriptor;
@@ -596,6 +602,7 @@ public class AirMapMarker extends AirMapFeature {
   public void addToMap(GoogleMap map, AirMapView view) {
     this.mapView = view;
     if (!filteredOut) {
+      removeFromMapIfThere();
       marker = map.addMarker(getMarkerOptions());
       marker.setTag("");
       updateTracksViewChanges();
@@ -615,17 +622,29 @@ public class AirMapMarker extends AirMapFeature {
     if (filteredOut) {
       marker = null;
     } else {
+      removeFromMapIfThere();
       marker = map.addMarker(getMarkerOptions());
       marker.setTag("");
+      if (selected) {
+        drawEstimatesAndPath(lastTimeEstimate, lastDistanceEstimate, lastPathOptions);
+      }
       updateMarkerIcon();
+    }
+  }
+
+  private void removeFromMapIfThere() {
+    if (marker != null && marker.getTag() != null) {
+      marker.remove();
+      if (selected && path != null) {
+        path.remove();
+        path = null;
+      }
     }
   }
 
   @Override
   public void removeFromMap(GoogleMap map) {
-    if (marker != null && marker.getTag() != null) {
-      marker.remove();
-    }
+    removeFromMapIfThere();
     marker = null;
     updateTracksViewChanges();
   }

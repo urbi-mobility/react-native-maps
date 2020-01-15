@@ -497,7 +497,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
               }
               addAllPolygons();
               addAllPolylines();
-              readdPathToSelected();
             } else if (lastMaxLatLng > switchToCityPinsDelta && maxLatLng < switchToCityPinsDelta) {
               // switch to provider markers
               map.clear();
@@ -629,14 +628,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
     addAllPolygons();
     addAllPolylines();
-    readdPathToSelected();
     showingProviderMarkers = true;
-  }
-
-  private void readdPathToSelected() {
-    if (AirMapMarker.pathOptions != null) {
-      AirMapMarker.path = map.addPolyline(AirMapMarker.pathOptions);
-    }
   }
 
   private AirMapCity getCity(LatLngBounds bounds) {
