@@ -605,6 +605,9 @@ public class AirMapMarker extends AirMapFeature {
       removeFromMapIfThere();
       marker = map.addMarker(getMarkerOptions());
       marker.setTag("");
+      if (selected) {
+        setIconSelected(true);
+      }
       updateTracksViewChanges();
     }
   }
@@ -615,6 +618,9 @@ public class AirMapMarker extends AirMapFeature {
         mapView.addMarkerToMap(this);
       else
         addToMap(map, mapView);
+      if (selected) {
+        setIconSelected(true);
+      }
     }
   }
 
@@ -626,9 +632,8 @@ public class AirMapMarker extends AirMapFeature {
       marker = map.addMarker(getMarkerOptions());
       marker.setTag("");
       if (selected) {
-        drawEstimatesAndPath(lastTimeEstimate, lastDistanceEstimate, lastPathOptions);
+        setIconSelected(true);
       }
-      updateMarkerIcon();
     }
   }
 
@@ -854,7 +859,10 @@ public class AirMapMarker extends AirMapFeature {
 
   public void setSelected(boolean isSelected) {
     if (mapView != null) {
-      if (this.selected && !isSelected) mapView.deselectIfSelected(this);
+      if (this.selected && !isSelected) {
+        mapView.deselectIfSelected(this);
+        setIconSelected(false);
+      }
       else if (isSelected) mapView.setSelectedMarker(this);
     }
     this.selected = isSelected;

@@ -221,10 +221,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     super.onCreate(null);
     // TODO(lmr): what about onStart????
     super.onResume();
-    if (map == null) {
-      super.getMapAsync(this);
+    if (map != null) {
+      map.clear();
+      map = null;
     }
-    final AirMapView view = this;
+    super.getMapAsync(this);
     gestureDetector =
         new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
 
@@ -306,11 +307,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (destroyed) {
       return;
     }
-    this.map = map;
-    this.map.setInfoWindowAdapter(this);
-    this.map.setOnMarkerDragListener(this);
-  this.map.setOnPoiClickListener(this);
-  this.map.setOnIndoorStateChangeListener(this);
+    AirMapView.map = map;
+    map.setInfoWindowAdapter(this);
+    map.setOnMarkerDragListener(this);
+    map.setOnPoiClickListener(this);
+    map.setOnIndoorStateChangeListener(this);
 
     manager.pushEvent(context, this, "onMapReady", new WritableNativeMap());
 
