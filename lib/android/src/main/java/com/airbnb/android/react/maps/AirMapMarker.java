@@ -453,13 +453,13 @@ public class AirMapMarker extends AirMapFeature {
   }
 
   private static String formatDistance(int meters) {
-    if (meters < 1000) return format(ENGLISH, "%dm", meters);
-    return format(ENGLISH, "%skm", ONE_DECIMAL_IF_NEEDED.format(meters / 1000.0));
+    if (meters < 1000) return format(ENGLISH, "%d m", meters);
+    return format(ENGLISH, "%s km", ONE_DECIMAL_IF_NEEDED.format(meters / 1000.0));
   }
 
   @TargetApi(21)
   private void addEstimatesToIcon(int seconds, int meters) {
-    if (selected) {
+    if (mapView != null && selected) {
 
       lastDistanceEstimate = meters;
       lastTimeEstimate = seconds;
@@ -537,11 +537,14 @@ public class AirMapMarker extends AirMapFeature {
   }
 
   public void setIconSelected(boolean isSelected) {
-    if (isSelected && marker != null) {
+    if (mapView != null && isSelected && marker != null) {
       mapView.fetchDirectionsTo(marker.getPosition(), new AirMapView.DirectionsCallback() {
         @Override
         public void accept(Integer timeEstimate, Integer distanceEstimate, String polyline) {
-          drawEstimatesAndPath(timeEstimate, distanceEstimate, pathToIcon(polyline));
+          // selection might change between tap and the moment results come back here
+          if (selected) {
+            drawEstimatesAndPath(timeEstimate, distanceEstimate, pathToIcon(polyline));
+          }
         }
       });
       iconBitmap = originalIconBitmap;

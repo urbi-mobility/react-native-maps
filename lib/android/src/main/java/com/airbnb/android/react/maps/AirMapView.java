@@ -359,6 +359,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
 
         AirMapMarker airMapMarker = getMarkerMap(marker);
+        if (airMapMarker == null) return false;
 
         event = makeClickEventData(marker.getPosition());
         event.putString("action", "marker-press");
@@ -1554,7 +1555,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   }
 
   public void setIndoorActiveLevelIndex(int activeLevelIndex) {
-    IndoorBuilding building = this.map.getFocusedBuilding();
+    IndoorBuilding building = map.getFocusedBuilding();
     if (building != null) {
       if (activeLevelIndex >= 0 && activeLevelIndex < building.getLevels().size()) {
         IndoorLevel level = building.getLevels().get(activeLevelIndex);
