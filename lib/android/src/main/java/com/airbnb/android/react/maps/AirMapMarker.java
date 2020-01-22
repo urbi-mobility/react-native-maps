@@ -1,20 +1,23 @@
 package com.airbnb.android.react.maps;
 
+import android.animation.ObjectAnimator;
+import android.animation.TypeEvaluator;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Typeface;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.text.StaticLayout;
 import android.text.TextPaint;
-import android.util.Log;
-import android.util.Pair;
+import android.util.Property;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.animation.ObjectAnimator;
-import android.util.Property;
-import android.animation.TypeEvaluator;
 
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.DataSource;
@@ -34,18 +37,25 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.*;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Dot;
+import com.google.android.gms.maps.model.Gap;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PatternItem;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
 import static com.airbnb.android.react.maps.AirMapView.PIN_SCALE_FACTOR;
-import static com.airbnb.android.react.maps.AirMapView.map;
 import static com.airbnb.android.react.maps.PolylineUtils.decodePoly;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
@@ -528,10 +538,10 @@ public class AirMapMarker extends AirMapFeature {
       path = null;
     }
     addEstimatesToIcon(time, distance);
-    if (time < mapView.getShowPathIfCloserThanSeconds()) {
+    if (mapView != null && time < mapView.getShowPathIfCloserThanSeconds()) {
       if (pathOptions != null) {
         lastPathOptions = pathOptions;
-        path = map.addPolyline(pathOptions);
+        path = mapView.map.addPolyline(pathOptions);
       }
     }
   }
@@ -620,7 +630,7 @@ public class AirMapMarker extends AirMapFeature {
       if (marker != null)
         mapView.addMarkerToMap(this);
       else
-        addToMap(map, mapView);
+        addToMap(mapView.map, mapView);
       if (selected) {
         setIconSelected(true);
       }

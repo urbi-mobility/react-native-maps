@@ -102,7 +102,8 @@ import static java.util.Locale.ENGLISH;
 
 public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleMap.OnPoiClickListener, GoogleMap.OnIndoorStateChangeListener {
-  public static GoogleMap map;
+  public GoogleMap mapToBeCleared;
+  public GoogleMap map;
   private FusedLocationProviderClient fusedLocationClient;
   private KmlLayer kmlLayer;
   private ProgressBar mapLoadingProgressBar;
@@ -221,8 +222,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     super.onCreate(null);
     // TODO(lmr): what about onStart????
     super.onResume();
-    if (map != null) {
-      map.clear();
+    if (manager.singleInstance && mapToBeCleared != null) {
+      mapToBeCleared.clear();
+      mapToBeCleared = null;
       map = null;
     }
     super.getMapAsync(this);
@@ -307,7 +309,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (destroyed) {
       return;
     }
-    AirMapView.map = map;
+    if (manager.singleInstance) {
+      mapToBeCleared = map;
+    }
+    this.map = map;
     map.setInfoWindowAdapter(this);
     map.setOnMarkerDragListener(this);
     map.setOnPoiClickListener(this);
@@ -1734,6 +1739,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     this.showPathIfCloserThanSeconds = showPathIfCloserThanSeconds;
     return this;
   }
+
 
   interface AirMapPaddingListener {
     void forceLayout();

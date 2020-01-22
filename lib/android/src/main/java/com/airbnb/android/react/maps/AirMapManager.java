@@ -53,6 +53,7 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   private AirMapMarkerManager markerManager;
 
   protected GoogleMapOptions googleMapOptions;
+  boolean singleInstance;
 
   public AirMapManager(ReactApplicationContext context) {
     this.appContext = context;
@@ -279,6 +280,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     }
   }
 
+  // URBI-specific fields
+
   @ReactProp(name = "switchToCityPinsDelta")
   public void setSwitchToCityPinsDelta(AirMapView view, float latLngDelta) {
     view.setSwitchToCityPinsDelta(latLngDelta);
@@ -303,6 +306,14 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   public void setShowPathIfCloserThanSeconds(AirMapView view, float seconds) {
     view.setShowPathIfCloserThanSeconds((int) seconds);
   }
+
+  @ReactProp(name = "singleInstance", defaultBoolean = false)
+  public void setSingleInstance(AirMapView view, boolean singleInstance) {
+    // if true, a static reference to the GoogleMap object will be kept and cleared before initializing a new AirMapView instance
+    this.singleInstance = singleInstance;
+  }
+
+  // end of URBI-specific fields
 
   private void emitMapError(ThemedReactContext context, String message, String type) {
     WritableMap error = Arguments.createMap();

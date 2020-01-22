@@ -227,6 +227,7 @@ declare module 'react-native-maps' {
     backendURL?: string;
     backendToken?: string;
     showPathIfCloserThanSeconds?: number;
+    singleInstance?: boolean;
     showsScale?: boolean;
     showsBuildings?: boolean;
     showsTraffic?: boolean;
