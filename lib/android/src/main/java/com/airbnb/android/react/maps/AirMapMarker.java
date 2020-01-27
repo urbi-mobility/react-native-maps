@@ -469,7 +469,7 @@ public class AirMapMarker extends AirMapFeature {
 
   @TargetApi(21)
   private void addEstimatesToIcon(int seconds, int meters) {
-    if (mapView != null && selected) {
+    if (mapView != null && selected && originalIconBitmap != null) {
 
       lastDistanceEstimate = meters;
       lastTimeEstimate = seconds;
