@@ -15,6 +15,7 @@ public class AirMapLiteManager extends AirMapManager {
   public AirMapLiteManager(ReactApplicationContext context) {
     super(context);
     this.googleMapOptions = new GoogleMapOptions().liteMode(true);
+    this.liteMode = true;
   }
 
 }

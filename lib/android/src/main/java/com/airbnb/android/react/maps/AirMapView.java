@@ -101,7 +101,7 @@ import static java.util.Arrays.asList;
 import static java.util.Locale.ENGLISH;
 
 public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
-    GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleMap.OnPoiClickListener, GoogleMap.OnIndoorStateChangeListener {
+        GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleMap.OnPoiClickListener, GoogleMap.OnIndoorStateChangeListener {
   public GoogleMap mapToBeCleared;
   public GoogleMap map;
   private FusedLocationProviderClient fusedLocationClient;
@@ -149,7 +149,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private int cameraMoveReason = 0;
 
   private static final String[] PERMISSIONS = new String[]{
-      "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"};
+          "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"};
 
   private final List<AirMapFeature> features = new ArrayList<>();
   private final Map<Marker, AirMapMarker> markerMap = new HashMap<>();
@@ -173,8 +173,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
   private static boolean contextHasBug(Context context) {
     return context == null ||
-        context.getResources() == null ||
-        context.getResources().getConfiguration() == null;
+            context.getResources() == null ||
+            context.getResources().getConfiguration() == null;
   }
 
   // We do this to fix this bug:
@@ -229,23 +229,23 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
     super.getMapAsync(this);
     gestureDetector =
-        new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
+            new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
 
-          @Override
-          public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
-                                  float distanceY) {
-            if (handlePanDrag) {
-              onPanDrag(e2);
-            }
-            return false;
-          }
+              @Override
+              public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                                      float distanceY) {
+                if (handlePanDrag) {
+                  onPanDrag(e2);
+                }
+                return false;
+              }
 
-          @Override
-          public boolean onDoubleTap(MotionEvent ev) {
-            onDoublePress(ev);
-            return false;
-          }
-        });
+              @Override
+              public boolean onDoubleTap(MotionEvent ev) {
+                onDoublePress(ev);
+                return false;
+              }
+            });
     this.addOnLayoutChangeListener(new OnLayoutChangeListener() {
       @Override
       public void onLayoutChange(View v, int left, int top, int right, int bottom,
@@ -336,7 +336,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         coordinate.putDouble("speed", location.getSpeed());
         coordinate.putDouble("heading", location.getBearing());
         if(android.os.Build.VERSION.SDK_INT >= 18){
-        coordinate.putBoolean("isFromMockProvider", location.isFromMockProvider());
+          coordinate.putBoolean("isFromMockProvider", location.isFromMockProvider());
         }
 
         event.putMap("coordinate", coordinate);
@@ -345,124 +345,133 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       }
     });
 
-    map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-      @Override
-      public boolean onMarkerClick(Marker marker) {
-        WritableMap event;
-        AirMapCity city;
+    if (manager.isLiteMode()) {
+      map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+          return true;
+        }
+      });
+    } else {
+      map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+          WritableMap event;
+          AirMapCity city;
 
-        if ((city = cityPins.get(marker)) != null) {
+          if ((city = cityPins.get(marker)) != null) {
+            event = makeClickEventData(marker.getPosition());
+            event.putString("action", "marker-press");
+            event.putString("id", city.getId());
+            manager.pushEvent(context, view, "onCityPress", event);
+
+            // TODO check if user's location is within the city, if so, zoom there instead
+            LatLng centerTo = city.getPinPosition();
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(centerTo, 16), 350, null);
+            return true;
+          }
+
+          AirMapMarker airMapMarker = getMarkerMap(marker);
+          if (airMapMarker == null) return false;
+
           event = makeClickEventData(marker.getPosition());
           event.putString("action", "marker-press");
-          event.putString("id", city.getId());
-          manager.pushEvent(context, view, "onCityPress", event);
+          event.putString("id", airMapMarker.getIdentifier());
+          manager.pushEvent(context, view, "onMarkerPress", event);
 
-          // TODO check if user's location is within the city, if so, zoom there instead
-          LatLng centerTo = city.getPinPosition();
-          map.animateCamera(CameraUpdateFactory.newLatLngZoom(centerTo, 16), 350, null);
-          return true;
+          event = makeClickEventData(marker.getPosition());
+          event.putString("action", "marker-press");
+          event.putString("id", airMapMarker.getIdentifier());
+          manager.pushEvent(context, airMapMarker, "onPress", event);
+
+          setSelectedMarker(airMapMarker);
+
+          // Return false to open the callout info window and center on the marker
+          // https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap
+          // .OnMarkerClickListener
+          if (view.moveOnMarkerPress) {
+            return false;
+          } else {
+            marker.showInfoWindow();
+            centerCameraTo(marker.getPosition(), 150, null);
+            return true;
+          }
         }
+      });
 
-        AirMapMarker airMapMarker = getMarkerMap(marker);
-        if (airMapMarker == null) return false;
-
-        event = makeClickEventData(marker.getPosition());
-        event.putString("action", "marker-press");
-        event.putString("id", airMapMarker.getIdentifier());
-        manager.pushEvent(context, view, "onMarkerPress", event);
-
-        event = makeClickEventData(marker.getPosition());
-        event.putString("action", "marker-press");
-        event.putString("id", airMapMarker.getIdentifier());
-        manager.pushEvent(context, airMapMarker, "onPress", event);
-
-        setSelectedMarker(airMapMarker);
-
-        // Return false to open the callout info window and center on the marker
-        // https://developers.google.com/android/reference/com/google/android/gms/maps/GoogleMap
-        // .OnMarkerClickListener
-        if (view.moveOnMarkerPress) {
-          return false;
-        } else {
-          marker.showInfoWindow();
-          centerCameraTo(marker.getPosition(), 150, null);
-          return true;
+      map.setOnPolygonClickListener(new GoogleMap.OnPolygonClickListener() {
+        @Override
+        public void onPolygonClick(Polygon polygon) {
+          WritableMap event = makeClickEventData(polygon.getPoints().get(0));
+          event.putString("action", "polygon-press");
+          manager.pushEvent(context, polygonMap.get(polygon), "onPress", event);
         }
-      }
-    });
+      });
 
-    map.setOnPolygonClickListener(new GoogleMap.OnPolygonClickListener() {
-      @Override
-      public void onPolygonClick(Polygon polygon) {
-        WritableMap event = makeClickEventData(polygon.getPoints().get(0));
-        event.putString("action", "polygon-press");
-        manager.pushEvent(context, polygonMap.get(polygon), "onPress", event);
-      }
-    });
+      map.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener() {
+        @Override
+        public void onPolylineClick(Polyline polyline) {
+          WritableMap event = makeClickEventData(polyline.getPoints().get(0));
+          event.putString("action", "polyline-press");
+          manager.pushEvent(context, polylineMap.get(polyline), "onPress", event);
+        }
+      });
 
-    map.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener() {
-      @Override
-      public void onPolylineClick(Polyline polyline) {
-        WritableMap event = makeClickEventData(polyline.getPoints().get(0));
-        event.putString("action", "polyline-press");
-        manager.pushEvent(context, polylineMap.get(polyline), "onPress", event);
-      }
-    });
+      map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+        @Override
+        public void onInfoWindowClick(Marker marker) {
+          WritableMap event;
 
-    map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-      @Override
-      public void onInfoWindowClick(Marker marker) {
-        WritableMap event;
-
-        event = makeClickEventData(marker.getPosition());
-        event.putString("action", "callout-press");
-        manager.pushEvent(context, view, "onCalloutPress", event);
-
-        event = makeClickEventData(marker.getPosition());
-        event.putString("action", "callout-press");
-
-        AirMapMarker markerView = getMarkerMap(marker);
-        if (markerView != null) {
-          manager.pushEvent(context, markerView, "onCalloutPress", event);
           event = makeClickEventData(marker.getPosition());
           event.putString("action", "callout-press");
-          AirMapCallout infoWindow = markerView.getCalloutView();
-          if (infoWindow != null) manager.pushEvent(context, infoWindow, "onPress", event);
+          manager.pushEvent(context, view, "onCalloutPress", event);
+
+          event = makeClickEventData(marker.getPosition());
+          event.putString("action", "callout-press");
+
+          AirMapMarker markerView = getMarkerMap(marker);
+          if (markerView != null) {
+            manager.pushEvent(context, markerView, "onCalloutPress", event);
+            event = makeClickEventData(marker.getPosition());
+            event.putString("action", "callout-press");
+            AirMapCallout infoWindow = markerView.getCalloutView();
+            if (infoWindow != null) manager.pushEvent(context, infoWindow, "onPress", event);
+          }
+
         }
+      });
 
-      }
-    });
-
-    map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-      @Override
-      public void onMapClick(LatLng point) {
-        WritableMap event = makeClickEventData(point);
-        event.putString("action", "press");
-        manager.pushEvent(context, view, "onPress", event);
-        if (selectedMarker != null) {
-          selectedMarker.setSelected(false);
-          // setSelectedMarker(null);
+      map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        @Override
+        public void onMapClick(LatLng point) {
+          WritableMap event = makeClickEventData(point);
+          event.putString("action", "press");
+          manager.pushEvent(context, view, "onPress", event);
+          if (selectedMarker != null) {
+            selectedMarker.setSelected(false);
+            // setSelectedMarker(null);
+          }
         }
-      }
-    });
+      });
 
-    map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-      @Override
-      public void onMapLongClick(LatLng point) {
-        WritableMap event = makeClickEventData(point);
-        event.putString("action", "long-press");
-        manager.pushEvent(context, view, "onLongPress", makeClickEventData(point));
-      }
-    });
+      map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+        @Override
+        public void onMapLongClick(LatLng point) {
+          WritableMap event = makeClickEventData(point);
+          event.putString("action", "long-press");
+          manager.pushEvent(context, view, "onLongPress", makeClickEventData(point));
+        }
+      });
 
-    map.setOnGroundOverlayClickListener(new GoogleMap.OnGroundOverlayClickListener() {
-      @Override
-      public void onGroundOverlayClick(GroundOverlay groundOverlay) {
-        WritableMap event = makeClickEventData(groundOverlay.getPosition());
-        event.putString("action", "overlay-press");
-        manager.pushEvent(context, overlayMap.get(groundOverlay), "onPress", event);
-      }
-    });
+      map.setOnGroundOverlayClickListener(new GoogleMap.OnGroundOverlayClickListener() {
+        @Override
+        public void onGroundOverlayClick(GroundOverlay groundOverlay) {
+          WritableMap event = makeClickEventData(groundOverlay.getPosition());
+          event.putString("action", "overlay-press");
+          manager.pushEvent(context, overlayMap.get(groundOverlay), "onPress", event);
+        }
+      });
+    }
 
     map.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
       @Override
@@ -485,8 +494,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       public void onCameraIdle() {
         LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
         if ((cameraMoveReason != 0) &&
-            ((cameraLastIdleBounds == null) ||
-                LatLngBoundsUtils.BoundsAreDifferent(bounds, cameraLastIdleBounds))) {
+                ((cameraLastIdleBounds == null) ||
+                        LatLngBoundsUtils.BoundsAreDifferent(bounds, cameraLastIdleBounds))) {
 
           double maxLatLng = LatLngBoundsUtils.getMaxLatLng(bounds);
           AirMapCity newCity = getCity(bounds);
@@ -521,7 +530,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
           }
 
           if (maxLatLng < switchToCityPinsDelta &&
-              (lastCity == null && newCity != null || lastCity != null && !lastCity.equals(newCity))) {
+                  (lastCity == null && newCity != null || lastCity != null && !lastCity.equals(newCity))) {
             lastCity = newCity;
             WritableMap map = new WritableNativeMap();
             map.putString("city", newCity == null ? "unset" : newCity.getId());
@@ -602,8 +611,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, newZoomLevel));
       } else {
         map.animateCamera(
-            CameraUpdateFactory.newLatLng(position),
-            delayMs, null);
+                CameraUpdateFactory.newLatLng(position),
+                delayMs, null);
       }
     }
   }
@@ -645,7 +654,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
     for (AirMapCity city : cities.values()) {
       if (city.getBounds().contains(bounds.northeast) ||
-          city.getBounds().contains(bounds.southwest)) {
+              city.getBounds().contains(bounds.southwest)) {
         return city;
       }
     }
@@ -655,7 +664,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
   private boolean hasPermissions() {
     return checkSelfPermission(getContext(), PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED ||
-        checkSelfPermission(getContext(), PERMISSIONS[1]) == PackageManager.PERMISSION_GRANTED;
+            checkSelfPermission(getContext(), PERMISSIONS[1]) == PackageManager.PERMISSION_GRANTED;
   }
 
 
@@ -704,8 +713,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     Double lngDelta = region.getDouble("longitudeDelta");
     Double latDelta = region.getDouble("latitudeDelta");
     LatLngBounds bounds = new LatLngBounds(
-        new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
-        new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
+            new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
+            new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
     );
     if (super.getHeight() <= 0 || super.getWidth() <= 0) {
       // in this case, our map has not been laid out yet, so we save the bounds in a local
@@ -1052,10 +1061,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   public void animateToNavigation(LatLng location, float bearing, float angle, int duration) {
     if (map == null) return;
     CameraPosition cameraPosition = new CameraPosition.Builder(map.getCameraPosition())
-        .bearing(bearing)
-        .tilt(angle)
-        .target(location)
-        .build();
+            .bearing(bearing)
+            .tilt(angle)
+            .target(location)
+            .build();
     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), duration, null);
   }
 
@@ -1068,16 +1077,16 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (map == null) return;
 
     CameraPosition cameraPosition = new CameraPosition.Builder(map.getCameraPosition())
-        .tilt(angle)
-        .build();
+            .tilt(angle)
+            .build();
     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), duration, null);
   }
 
   public void animateToBearing(float bearing, int duration) {
     if (map == null) return;
     CameraPosition cameraPosition = new CameraPosition.Builder(map.getCameraPosition())
-        .bearing(bearing)
-        .build();
+            .bearing(bearing)
+            .build();
     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), duration, null);
   }
 
@@ -1143,7 +1152,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
       if (edgePadding != null) {
         map.setPadding(edgePadding.getInt("left"), edgePadding.getInt("top"),
-            edgePadding.getInt("right"), edgePadding.getInt("bottom"));
+                edgePadding.getInt("right"), edgePadding.getInt("bottom"));
       }
 
       if (animated) {
@@ -1172,7 +1181,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
     if (edgePadding != null) {
       map.setPadding(edgePadding.getInt("left"), edgePadding.getInt("top"),
-          edgePadding.getInt("right"), edgePadding.getInt("bottom"));
+              edgePadding.getInt("right"), edgePadding.getInt("bottom"));
     }
 
     if (animated) {
@@ -1181,7 +1190,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       map.moveCamera(cu);
     }
     map.setPadding(0, 0, 0,
-        0); // Without this, the Google logo is moved up by the value of edgePadding.bottom
+            0); // Without this, the Google logo is moved up by the value of edgePadding.bottom
   }
 
   public double[][] getMapBoundaries() {
@@ -1190,8 +1199,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     LatLng southWest = bounds.southwest;
 
     return new double[][]{
-        {northEast.longitude, northEast.latitude},
-        {southWest.longitude, southWest.latitude}
+            {northEast.longitude, northEast.latitude},
+            {southWest.longitude, southWest.latitude}
     };
   }
 
@@ -1238,7 +1247,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     switch (action) {
       case (MotionEvent.ACTION_DOWN):
         this.getParent().requestDisallowInterceptTouchEvent(
-            map != null && map.getUiSettings().isScrollGesturesEnabled());
+                map != null && map.getUiSettings().isScrollGesturesEnabled());
         break;
       case (MotionEvent.ACTION_UP):
         // Clear this regardless, since isScrollGesturesEnabled() may have been updated
@@ -1308,11 +1317,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       this.mapLoadingLayout = new RelativeLayout(getContext());
       this.mapLoadingLayout.setBackgroundColor(Color.LTGRAY);
       this.addView(this.mapLoadingLayout,
-          new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-              ViewGroup.LayoutParams.MATCH_PARENT));
+              new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                      ViewGroup.LayoutParams.MATCH_PARENT));
 
       RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-          RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+              RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
       params.addRule(RelativeLayout.CENTER_IN_PARENT);
       this.mapLoadingLayout.addView(this.getMapLoadingProgressBar(), params);
 
@@ -1326,8 +1335,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (this.cacheImageView == null) {
       this.cacheImageView = new ImageView(getContext());
       this.addView(this.cacheImageView,
-          new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-              ViewGroup.LayoutParams.MATCH_PARENT));
+              new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                      ViewGroup.LayoutParams.MATCH_PARENT));
       this.cacheImageView.setVisibility(View.INVISIBLE);
     }
     return this.cacheImageView;
@@ -1472,7 +1481,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         AirMapMarker marker = new AirMapMarker(context, options, this.manager.getMarkerManager());
 
         if (placemark.getInlineStyle() != null
-            && placemark.getInlineStyle().getIconUrl() != null) {
+                && placemark.getInlineStyle().getIconUrl() != null) {
           marker.setImage(placemark.getInlineStyle().getIconUrl());
         } else if (container.getStyle(placemark.getStyleId()) != null) {
           KmlStyle style = container.getStyle(placemark.getStyleId());
@@ -1594,7 +1603,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         continue;
 
       if (thisMarker.getPosition().equals(marker.getPosition())
-          && thisMarker.getTitle().equals(marker.getTitle())) {
+              && thisMarker.getTitle().equals(marker.getTitle())) {
         airMarker = entryMarker.getValue();
         break;
       }
@@ -1632,7 +1641,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
   public void manuallyLayoutChildren(View child) {
     child.measure(MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY),
-        MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
+            MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
 
     child.layout(0, 0, child.getMeasuredWidth(), child.getMeasuredHeight());
   }
@@ -1652,11 +1661,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
             public void run() {
               try {
                 List<Pair<String, String>> params = asList(
-                    new Pair<>("origin", format(ENGLISH, "%.6f,%.6f", from.getLatitude(), from.getLongitude())),
-                    new Pair<>("destination", format(ENGLISH, "%.6f,%.6f", to.latitude, to.longitude)),
-                    new Pair<>("mode", "walking"),
-                    new Pair<>("avoid", "tolls|highways|ferries"),
-                    new Pair<>("language", "en")
+                        new Pair<>("origin", format(ENGLISH, "%.6f,%.6f", from.getLatitude(), from.getLongitude())),
+                        new Pair<>("destination", format(ENGLISH, "%.6f,%.6f", to.latitude, to.longitude)),
+                        new Pair<>("mode", "walking"),
+                        new Pair<>("avoid", "tolls|highways|ferries"),
+                        new Pair<>("language", "en")
                 );
 
                 StringBuilder builder = new StringBuilder();
@@ -1671,9 +1680,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
                 String url = format("%s/v3/legacy/maps/directions?%s", beURL, builder.toString());
 
                 Request request = new Request.Builder().url(url)
-                    .post(RequestBody.create(MIME_JSON, "{}"))
-                    .addHeader("Authorization", auth)
-                    .build();
+                        .post(RequestBody.create(MIME_JSON, "{}"))
+                        .addHeader("Authorization", auth)
+                        .build();
 
                 HTTP_CLIENT.newCall(request).enqueue(new Callback() {
                   @Override
@@ -1688,12 +1697,12 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
                       if (body != null) {
                         // we'll catch any error in the try/catch. Yes, Exception, #yolo
                         JSONObject route = new JSONObject(body.string())
-                            .getJSONArray("routes")
-                            .getJSONObject(0);
+                                .getJSONArray("routes")
+                                .getJSONObject(0);
 
                         JSONObject leg = route
-                            .getJSONArray("legs")
-                            .getJSONObject(0);
+                                .getJSONArray("legs")
+                                .getJSONObject(0);
 
                         final int seconds = leg.getJSONObject("duration").getInt("value");
                         final int meters = leg.getJSONObject("distance").getInt("value");
@@ -1749,3 +1758,4 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     int getTopHeight();
   }
 }
+

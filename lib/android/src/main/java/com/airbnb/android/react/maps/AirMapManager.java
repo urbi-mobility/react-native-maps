@@ -42,17 +42,18 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   private static final int CENTER_TO = 667;
 
   private final Map<String, Integer> MAP_TYPES = MapBuilder.of(
-      "standard", GoogleMap.MAP_TYPE_NORMAL,
-      "satellite", GoogleMap.MAP_TYPE_SATELLITE,
-      "hybrid", GoogleMap.MAP_TYPE_HYBRID,
-      "terrain", GoogleMap.MAP_TYPE_TERRAIN,
-      "none", GoogleMap.MAP_TYPE_NONE
+          "standard", GoogleMap.MAP_TYPE_NORMAL,
+          "satellite", GoogleMap.MAP_TYPE_SATELLITE,
+          "hybrid", GoogleMap.MAP_TYPE_HYBRID,
+          "terrain", GoogleMap.MAP_TYPE_TERRAIN,
+          "none", GoogleMap.MAP_TYPE_NONE
   );
 
   private final ReactApplicationContext appContext;
   private AirMapMarkerManager markerManager;
 
   protected GoogleMapOptions googleMapOptions;
+  protected boolean liteMode;
   boolean singleInstance;
 
   public AirMapManager(ReactApplicationContext context) {
@@ -74,6 +75,10 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     this.markerManager = markerManager;
   }
 
+  public boolean isLiteMode() {
+    return liteMode;
+  }
+
   @Override
   public String getName() {
     return REACT_CLASS;
@@ -85,7 +90,7 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   }
 
   public static <K, V> Map<K, V> CreateMap(
-      K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7, V v7, K k8, V v8, K k9, V v9, K k10, V v10) {
+          K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7, V v7, K k8, V v8, K k9, V v9, K k10, V v10) {
     Map map = new HashMap<K, V>();
     map.put(k1, v1);
     map.put(k2, v2);
@@ -321,8 +326,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     error.putString("type", type);
 
     context
-        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit("onError", error);
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+            .emit("onError", error);
   }
 
   @Override
@@ -368,8 +373,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
         lngDelta = region.getDouble("longitudeDelta");
         latDelta = region.getDouble("latitudeDelta");
         LatLngBounds bounds = new LatLngBounds(
-            new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
-            new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
+                new LatLng(lat - latDelta / 2, lng - lngDelta / 2), // southwest
+                new LatLng(lat + latDelta / 2, lng + lngDelta / 2)  // northeast
         );
         view.animateToRegion(bounds, duration);
         break;
@@ -431,32 +436,32 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   @Nullable
   public Map getExportedCustomDirectEventTypeConstants() {
     Map<String, Map<String, String>> map = MapBuilder.of(
-        "onMapReady", MapBuilder.of("registrationName", "onMapReady"),
-        "onPress", MapBuilder.of("registrationName", "onPress"),
-        "onLongPress", MapBuilder.of("registrationName", "onLongPress"),
-        "onMarkerPress", MapBuilder.of("registrationName", "onMarkerPress"),
-        "onMarkerSelect", MapBuilder.of("registrationName", "onMarkerSelect"),
-        "onMarkerDeselect", MapBuilder.of("registrationName", "onMarkerDeselect"),
-        "onCalloutPress", MapBuilder.of("registrationName", "onCalloutPress")
+            "onMapReady", MapBuilder.of("registrationName", "onMapReady"),
+            "onPress", MapBuilder.of("registrationName", "onPress"),
+            "onLongPress", MapBuilder.of("registrationName", "onLongPress"),
+            "onMarkerPress", MapBuilder.of("registrationName", "onMarkerPress"),
+            "onMarkerSelect", MapBuilder.of("registrationName", "onMarkerSelect"),
+            "onMarkerDeselect", MapBuilder.of("registrationName", "onMarkerDeselect"),
+            "onCalloutPress", MapBuilder.of("registrationName", "onCalloutPress")
     );
 
     map.putAll(MapBuilder.of(
-        "onUserLocationChange", MapBuilder.of("registrationName", "onUserLocationChange"),
-        "onMarkerDragStart", MapBuilder.of("registrationName", "onMarkerDragStart"),
-        "onMarkerDrag", MapBuilder.of("registrationName", "onMarkerDrag"),
-        "onMarkerDragEnd", MapBuilder.of("registrationName", "onMarkerDragEnd"),
-        "onPanDrag", MapBuilder.of("registrationName", "onPanDrag"),
-        "onKmlReady", MapBuilder.of("registrationName", "onKmlReady"),
-        "onPoiClick", MapBuilder.of("registrationName", "onPoiClick")
+            "onUserLocationChange", MapBuilder.of("registrationName", "onUserLocationChange"),
+            "onMarkerDragStart", MapBuilder.of("registrationName", "onMarkerDragStart"),
+            "onMarkerDrag", MapBuilder.of("registrationName", "onMarkerDrag"),
+            "onMarkerDragEnd", MapBuilder.of("registrationName", "onMarkerDragEnd"),
+            "onPanDrag", MapBuilder.of("registrationName", "onPanDrag"),
+            "onKmlReady", MapBuilder.of("registrationName", "onKmlReady"),
+            "onPoiClick", MapBuilder.of("registrationName", "onPoiClick")
     ));
 
     map.putAll(MapBuilder.of(
-        "onIndoorLevelActivated", MapBuilder.of("registrationName", "onIndoorLevelActivated"),
-        "onIndoorBuildingFocused", MapBuilder.of("registrationName", "onIndoorBuildingFocused"),
-        "onCityPress", MapBuilder.of("registrationName", "onCityPress"),
-        "onCityChange", MapBuilder.of("registrationName", "onCityChange"),
-        "onDoublePress", MapBuilder.of("registrationName", "onDoublePress"),
-        "onMapLoaded", MapBuilder.of("registrationName", "onMapLoaded")
+            "onIndoorLevelActivated", MapBuilder.of("registrationName", "onIndoorLevelActivated"),
+            "onIndoorBuildingFocused", MapBuilder.of("registrationName", "onIndoorBuildingFocused"),
+            "onCityPress", MapBuilder.of("registrationName", "onCityPress"),
+            "onCityChange", MapBuilder.of("registrationName", "onCityChange"),
+            "onDoublePress", MapBuilder.of("registrationName", "onDoublePress"),
+            "onMapLoaded", MapBuilder.of("registrationName", "onMapLoaded")
     ));
 
     return map;
@@ -466,23 +471,23 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   @Override
   public Map<String, Integer> getCommandsMap() {
     Map<String, Integer> map = this.CreateMap(
-        "setCamera", SET_CAMERA,
-        "animateCamera", ANIMATE_CAMERA,
-        "animateToRegion", ANIMATE_TO_REGION,
-        "animateToCoordinate", ANIMATE_TO_COORDINATE,
-        "animateToViewingAngle", ANIMATE_TO_VIEWING_ANGLE,
-        "animateToBearing", ANIMATE_TO_BEARING,
-        "fitToElements", FIT_TO_ELEMENTS,
-        "fitToSuppliedMarkers", FIT_TO_SUPPLIED_MARKERS,
-        "fitToCoordinates", FIT_TO_COORDINATES,
-        "animateToNavigation", ANIMATE_TO_NAVIGATION
+            "setCamera", SET_CAMERA,
+            "animateCamera", ANIMATE_CAMERA,
+            "animateToRegion", ANIMATE_TO_REGION,
+            "animateToCoordinate", ANIMATE_TO_COORDINATE,
+            "animateToViewingAngle", ANIMATE_TO_VIEWING_ANGLE,
+            "animateToBearing", ANIMATE_TO_BEARING,
+            "fitToElements", FIT_TO_ELEMENTS,
+            "fitToSuppliedMarkers", FIT_TO_SUPPLIED_MARKERS,
+            "fitToCoordinates", FIT_TO_COORDINATES,
+            "animateToNavigation", ANIMATE_TO_NAVIGATION
     );
 
     map.putAll(MapBuilder.of(
-        "setMapBoundaries", SET_MAP_BOUNDARIES,
-        "setIndoorActiveLevelIndex", SET_INDOOR_ACTIVE_LEVEL_INDEX,
-        "centerToUserLocation", CENTER_TO_USER_LOCATION,
-        "centerTo", CENTER_TO
+            "setMapBoundaries", SET_MAP_BOUNDARIES,
+            "setIndoorActiveLevelIndex", SET_INDOOR_ACTIVE_LEVEL_INDEX,
+            "centerToUserLocation", CENTER_TO_USER_LOCATION,
+            "centerTo", CENTER_TO
     ));
 
     return map;
@@ -522,7 +527,7 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   void pushEvent(ThemedReactContext context, View view, String name, WritableMap data) {
     context.getJSModule(RCTEventEmitter.class)
-        .receiveEvent(view.getId(), name, data);
+            .receiveEvent(view.getId(), name, data);
   }
 
   @Override
