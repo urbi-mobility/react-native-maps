@@ -768,6 +768,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
             centerCameraTo(new LatLng(location.getLatitude(), location.getLongitude()), 600, 16);
         }
       });
+    } else {
+      manager.pushEvent(context, this, "onPermissionsNeeded", new WritableNativeMap());
     }
   }
 
@@ -1650,7 +1652,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     void accept(Integer timeEstimate, Integer distanceEstimate, String polyline);
   }
 
-  public void fetchDirectionsTo(final LatLng to, final DirectionsCallback callback) {
+  public void fetchDirectionsTo(final LatLng to, final com.airbnb.android.react.maps.AirMapView.DirectionsCallback callback) {
     if (hasPermissions()) {
       fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
         @Override

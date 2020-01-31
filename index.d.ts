@@ -272,6 +272,7 @@ declare module 'react-native-maps' {
     onMarkerDragStart?: (event: MapEvent) => void;
     onMarkerDrag?: (event: MapEvent) => void;
     onMarkerDragEnd?: (event: MapEvent) => void;
+    onPemissionsNeeded?: () => void;
 
     minZoomLevel?: number;
     maxZoomLevel?: number;

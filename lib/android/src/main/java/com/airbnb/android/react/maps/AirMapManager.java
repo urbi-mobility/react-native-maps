@@ -461,7 +461,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
             "onCityPress", MapBuilder.of("registrationName", "onCityPress"),
             "onCityChange", MapBuilder.of("registrationName", "onCityChange"),
             "onDoublePress", MapBuilder.of("registrationName", "onDoublePress"),
-            "onMapLoaded", MapBuilder.of("registrationName", "onMapLoaded")
+            "onMapLoaded", MapBuilder.of("registrationName", "onMapLoaded"),
+            "onPermissionsNeeded", MapBuilder.of("registrationName", "onPermissionsNeeded")
     ));
 
     return map;
