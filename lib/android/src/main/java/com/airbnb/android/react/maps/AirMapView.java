@@ -1682,7 +1682,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
                 }
                 builder.deleteCharAt(builder.length() - 1);
 
-                String url = format("%s/v3/legacy/maps/directions?%s", beURL, builder.toString());
+                String url = format("%s/api/v3/legacy/maps/directions?%s", beURL, builder.toString());
 
                 Request request = new Request.Builder().url(url)
                         .post(RequestBody.create(MIME_JSON, "{}"))
