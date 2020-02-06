@@ -557,8 +557,12 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         isMapLoaded = true;
         manager.pushEvent(context, view, "onMapLoaded", new WritableNativeMap());
         AirMapView.this.cacheView();
-        for (AirMapCity city : cities.values()) {
-          cityPins.put(map.addMarker(city.getMarker().getMarkerOptions()), city);
+        LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
+        double maxLatLng = LatLngBoundsUtils.getMaxLatLng(bounds);
+        if (maxLatLng > switchToCityPinsDelta) {
+          for (AirMapCity city : cities.values()) {
+            cityPins.put(map.addMarker(city.getMarker().getMarkerOptions()), city);
+          }
         }
       }
     });
