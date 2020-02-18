@@ -86,6 +86,7 @@ class Urbi extends React.Component {
     this.onTest = this.onTest.bind(this);
     this.renderPolygons = this.renderPolygons.bind(this);
     this.onToggleHighlight = this.onToggleHighlight.bind(this);
+    this.onUserLocationUpdate = this.onUserLocationUpdate.bind(this)
   }
 
   UNSAFE_componentWillMount() {
@@ -94,6 +95,9 @@ class Urbi extends React.Component {
     ).then(granted => {
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         this.onMapReady();
+        if(this.map.current){
+          this.map.current.startLocationUpdates();
+        }
       }
     });
   }
@@ -172,6 +176,11 @@ class Urbi extends React.Component {
     }
   }
 
+  onUserLocationUpdate(e) {
+    const coordinate = e.nativeEvent.coordinate
+    ToastAndroid.show(`onUserLocationUpdate ${JSON.stringify(coordinate)}`, ToastAndroid.SHORT);
+  }
+
   onCenterPress() {
     this.map.current.centerToUserLocation();
   }
@@ -237,6 +246,7 @@ class Urbi extends React.Component {
           cityPins={cityPins}
           onCityPress={this.onCityPress}
           onCityChange={this.onCityChange}
+          onUserLocationUpdate={this.onUserLocationUpdate}
           mapPadding={{
             top: 0,
             right: 0,
