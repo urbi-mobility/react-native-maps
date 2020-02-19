@@ -1,5 +1,3 @@
-import {EventUserLocation} from "react-native-maps";
-
 declare module 'react-native-maps' {
   import * as React from 'react';
   import {
@@ -312,6 +310,8 @@ declare module 'react-native-maps' {
     coordinateForPoint(point: Point): Promise<LatLng>;
     centerToUserLocation(): void;
     centerTo(coordinates: LatLng): void;
+    startLocationUpdates(): void;
+    stopLocationUpdates(): void;
   }
 
   export class MapViewAnimated extends MapView {}
