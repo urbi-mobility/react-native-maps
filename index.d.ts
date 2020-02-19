@@ -1,3 +1,5 @@
+import {EventUserLocation} from "react-native-maps";
+
 declare module 'react-native-maps' {
   import * as React from 'react';
   import {
@@ -254,6 +256,7 @@ declare module 'react-native-maps' {
     onDoublePress?: (event: MapEvent) => void;
     onLongPress?: (event: MapEvent) => void;
     onUserLocationChange?: (event: EventUserLocation) => void;
+    onUserLocationUpdate?: (event: EventUserLocation) => void;
     onPanDrag?: (event: MapEvent) => void;
     onPoiClick?: (event: MapEvent<{ placeId: string; name: string }>) => void;
     onMarkerPress?: (

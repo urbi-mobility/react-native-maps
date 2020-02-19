@@ -2,6 +2,7 @@ package com.airbnb.android.react.maps;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -10,11 +11,6 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.location.Location;
 import android.os.Build;
-
-import androidx.annotation.NonNull;
-import androidx.core.view.GestureDetectorCompat;
-import androidx.core.view.MotionEventCompat;
-
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -26,6 +22,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+
+import androidx.annotation.NonNull;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.core.view.MotionEventCompat;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -39,8 +39,18 @@ import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.EventDispatcher;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -50,9 +60,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.IndoorBuilding;
 import com.google.android.gms.maps.model.IndoorLevel;
-import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -60,14 +70,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.maps.model.TileOverlay;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.maps.android.data.kml.KmlContainer;
 import com.google.maps.android.data.kml.KmlLayer;
 import com.google.maps.android.data.kml.KmlPlacemark;
 import com.google.maps.android.data.kml.KmlStyle;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -75,15 +86,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -93,7 +101,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okhttp3.internal.annotations.EverythingIsNonNull;
 
 import static androidx.core.content.PermissionChecker.checkSelfPermission;
 import static java.lang.String.format;
@@ -134,7 +141,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   /**
    * end of urbi-specific fields
    */
-
+  private LocationCallback locationCallback;
   private LatLngBounds boundsToMove;
   private CameraUpdate cameraToSet;
   private boolean showUserLocation = false;
@@ -165,7 +172,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private boolean destroyed = false;
   private final ThemedReactContext context;
   private EventDispatcher eventDispatcher;
-
+  // Request Code that can be Used in MainActivity in order to check if user change setting
+  public static int REQUEST_CODE_GPS_SETTINGS = 3100;
   private AirMapMarker selectedMarker;
   AirMapPaddingListener paddingListener;
 
@@ -268,6 +276,98 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     attacherLayoutParams.topMargin = 99999999;
     attacherGroup.setLayoutParams(attacherLayoutParams);
     addView(attacherGroup);
+  }
+
+  public void startLocationUpdates() {
+    if (hasPermissions() && context.getCurrentActivity() != null) {
+      if (locationCallback == null)
+        locationCallback = createLocationCallBack();
+      fusedLocationClient.requestLocationUpdates(createLocationRequest(), locationCallback, Looper.getMainLooper());
+    }
+  }
+
+  public void stopLocationUpdates() {
+    if (locationCallback != null)
+      fusedLocationClient.removeLocationUpdates(locationCallback);
+  }
+
+  private LocationRequest createLocationRequest() {
+    LocationRequest locationRequest = LocationRequest.create();
+    locationRequest.setInterval(100000);
+    locationRequest.setFastestInterval(20000);
+    locationRequest.setMaxWaitTime(1500000);
+    locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+    LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+            .setAlwaysShow(true);
+
+    SettingsClient client = LocationServices.getSettingsClient(context.getCurrentActivity());
+    Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+
+    task.addOnSuccessListener(context.getCurrentActivity(), new OnSuccessListener<LocationSettingsResponse>() {
+      @Override
+      public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+        if (hasPermissions())
+          startLocationUpdates();
+
+      }
+    });
+    task.addOnFailureListener(context.getCurrentActivity(), new OnFailureListener() {
+      @Override
+      public void onFailure(@NonNull Exception e) {
+        int statusCode = ((ApiException) e).getStatusCode();
+        switch (statusCode) {
+          case CommonStatusCodes.RESOLUTION_REQUIRED:
+            // Location settings are not satisfied, but this can be fixed
+            // by showing the user a dialog.
+            try {
+              // Show the dialog by calling startResolutionForResult(),
+              // and check the result in onActivityResult().
+              ResolvableApiException resolvable = (ResolvableApiException) e;
+              resolvable.startResolutionForResult(context.getCurrentActivity(), REQUEST_CODE_GPS_SETTINGS);
+            } catch (IntentSender.SendIntentException sendEx) {
+              Log.e("createLocationRequest", Log.getStackTraceString(sendEx));
+            }
+            break;
+          case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+            Log.e("createLocationRequest", "SETTINGS CHANGE UNAVAILABLE");
+            break;
+        }
+      }
+    });
+    return locationRequest;
+  }
+
+  private LocationCallback createLocationCallBack() {
+    final AirMapView view = this;
+    LocationCallback locationCallback = new LocationCallback() {
+      @Override
+      public void onLocationResult(LocationResult locationResult) {
+        Log.d("onLocationResult", locationResult.toString());
+        Location location = locationResult.getLastLocation();
+        if (location != null) {
+
+          WritableMap event = new WritableNativeMap();
+
+          WritableMap coordinate = new WritableNativeMap();
+          coordinate.putDouble("latitude", location.getLatitude());
+          coordinate.putDouble("longitude", location.getLongitude());
+          coordinate.putDouble("altitude", location.getAltitude());
+          coordinate.putDouble("timestamp", location.getTime());
+          coordinate.putDouble("accuracy", location.getAccuracy());
+          coordinate.putDouble("speed", location.getSpeed());
+          coordinate.putDouble("heading", location.getBearing());
+          if (android.os.Build.VERSION.SDK_INT >= 18) {
+            coordinate.putBoolean("isFromMockProvider", location.isFromMockProvider());
+          }
+          event.putMap("coordinate", coordinate);
+          manager.pushEvent(context, view, "onUserLocationUpdate", event);
+        }
+      }
+
+    };
+    return locationCallback;
   }
 
   private void scaleDown(AirMapMarker airMapMarker) {
