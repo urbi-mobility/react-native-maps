@@ -172,6 +172,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private boolean destroyed = false;
   private final ThemedReactContext context;
   private EventDispatcher eventDispatcher;
+  // Request Code that can be Used in MainActivity in order to check if user change setting
   public static int REQUEST_CODE_GPS_SETTINGS = 3100;
   private AirMapMarker selectedMarker;
   AirMapPaddingListener paddingListener;
@@ -330,7 +331,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
             }
             break;
           case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-            Log.e("createLocationRequest", "We cant do anithing");
+            Log.e("createLocationRequest", "SETTINGS CHANGE UNAVAILABLE");
             break;
         }
       }
