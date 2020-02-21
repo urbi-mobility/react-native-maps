@@ -182,6 +182,9 @@ class Urbi extends React.Component {
   }
 
   onCenterPress() {
+    this.map.current.getLastLocation().then(l => {
+      ToastAndroid.show(`last location ${JSON.stringify(l)}`);
+    }).catch(error => console.log(error) );
     this.map.current.centerToUserLocation();
   }
 
@@ -279,6 +282,12 @@ class Urbi extends React.Component {
               onPress={this.onToggleHighlight}
             >
               <Text style={styles.buttonLabel}>toggle booked</Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+                style={styles.button}
+                onPress={this.onCenterPress}
+            >
+              <Text style={styles.buttonLabel}>center</Text>
             </TouchableHighlight>
           </View>
         </View>
