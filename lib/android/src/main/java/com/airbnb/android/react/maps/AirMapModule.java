@@ -3,9 +3,11 @@ package com.airbnb.android.react.maps;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.location.Location;
 import android.net.Uri;
 import android.util.Base64;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -176,6 +178,32 @@ public class AirMapModule extends ReactContextBaseJavaModule {
         cameraJson.putDouble("pitch", (double)position.tilt);
 
         promise.resolve(cameraJson);
+      }
+    });
+  }
+
+  @ReactMethod
+  public void getLastLocation(final int tag, final Promise promise) {
+    final ReactApplicationContext context = getReactApplicationContext();
+
+    UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
+    uiManager.addUIBlock(new UIBlock() {
+      @Override
+      public void execute(NativeViewHierarchyManager nvhm) {
+        AirMapView view = (AirMapView) nvhm.resolveView(tag);
+        if (view == null) {
+          promise.reject("AirMapView not found");
+          return;
+        }
+        Location location = view.getLastLocation();
+        if(location == null) {
+          promise.reject("location is null");
+          return;
+        }
+        WritableMap map = new WritableNativeMap();
+        map.putDouble("latitude", location.getLatitude());
+        map.putDouble("longitude", location.getLongitude());
+        promise.resolve(map);
       }
     });
   }

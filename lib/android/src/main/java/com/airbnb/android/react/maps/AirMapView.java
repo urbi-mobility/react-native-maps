@@ -120,7 +120,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private Integer loadingBackgroundColor = null;
   private Integer loadingIndicatorColor = null;
   private final int baseMapPadding = 50;
-
+  private Location lastLocation= null;
   /**
    * urbi-specific fields
    */
@@ -344,10 +344,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     LocationCallback locationCallback = new LocationCallback() {
       @Override
       public void onLocationResult(LocationResult locationResult) {
-        Log.d("onLocationResult", locationResult.toString());
         Location location = locationResult.getLastLocation();
         if (location != null) {
-
+          lastLocation = location;
           WritableMap event = new WritableNativeMap();
 
           WritableMap coordinate = new WritableNativeMap();
@@ -873,6 +872,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         public void onSuccess(Location location) {
           if (location != null)
             centerCameraTo(new LatLng(location.getLatitude(), location.getLongitude()), 600, 16);
+          else if(lastLocation != null)
+            centerCameraTo(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()), 600, 16);
         }
       });
     } else {
@@ -1865,6 +1866,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     void forceLayout();
 
     int getTopHeight();
+  }
+
+  public Location getLastLocation() {
+    return lastLocation;
   }
 }
 
