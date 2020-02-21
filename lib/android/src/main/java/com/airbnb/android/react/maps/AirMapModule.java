@@ -195,14 +195,17 @@ public class AirMapModule extends ReactContextBaseJavaModule {
           promise.reject("AirMapView not found");
           return;
         }
+
         Location location = view.getLastLocation();
-        if(location == null) {
+        if (location == null) {
           promise.reject("location is null");
           return;
         }
+
         WritableMap map = new WritableNativeMap();
         map.putDouble("latitude", location.getLatitude());
         map.putDouble("longitude", location.getLongitude());
+
         promise.resolve(map);
       }
     });
