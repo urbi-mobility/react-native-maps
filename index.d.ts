@@ -311,8 +311,6 @@ declare module 'react-native-maps' {
     coordinateForPoint(point: Point): Promise<LatLng>;
     centerToUserLocation(): void;
     centerTo(coordinates: LatLng): void;
-    startLocationUpdates(): void;
-    stopLocationUpdates(): void;
   }
 
   export class MapViewAnimated extends MapView {}

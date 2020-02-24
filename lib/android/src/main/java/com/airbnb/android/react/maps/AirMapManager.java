@@ -36,9 +36,6 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   private static final int SET_INDOOR_ACTIVE_LEVEL_INDEX = 10;
   private static final int SET_CAMERA = 11;
   private static final int ANIMATE_CAMERA = 12;
-  private static final int START_USER_UPDATE = 13;
-  private static final int STOP_USER_UPDATE = 14;
-
 
   // urbi-specific
   private static final int CENTER_TO_USER_LOCATION = 666;
@@ -432,12 +429,6 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
         lat = region.getDouble("latitude");
         view.centerTo(new LatLng(lat, lng));
         break;
-      case START_USER_UPDATE:
-        view.startLocationUpdates();
-        break;
-      case STOP_USER_UPDATE:
-        view.stopLocationUpdates();
-        break;
 
     }
   }
@@ -499,8 +490,6 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
             "setMapBoundaries", SET_MAP_BOUNDARIES,
             "setIndoorActiveLevelIndex", SET_INDOOR_ACTIVE_LEVEL_INDEX,
             "centerToUserLocation", CENTER_TO_USER_LOCATION,
-            "startLocationUpdates", START_USER_UPDATE,
-            "stopLocationUpdates", STOP_USER_UPDATE,
             "centerTo", CENTER_TO
     ));
 
