@@ -1,7 +1,9 @@
 package com.airbnb.android.react.maps;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -27,7 +29,9 @@ import androidx.annotation.NonNull;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.MotionEventCompat;
 
+import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.BaseActivityEventListener;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -109,7 +113,6 @@ import static java.util.Locale.ENGLISH;
 
 public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleMap.OnPoiClickListener, GoogleMap.OnIndoorStateChangeListener {
-  public GoogleMap mapToBeCleared;
   public GoogleMap map;
   private FusedLocationProviderClient fusedLocationClient;
   private KmlLayer kmlLayer;
@@ -120,13 +123,18 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private Integer loadingBackgroundColor = null;
   private Integer loadingIndicatorColor = null;
   private final int baseMapPadding = 50;
-  private Location lastLocation = null;
+
   /**
    * urbi-specific fields
    */
   public static final double PIN_SCALE_FACTOR = 0.8;
+  /**
+   * Used as requestCode when enabling location services via startActivityForResult.
+   */
+  public static int LOCATION_SERVICES_ENABLE_REQUEST_CODE = 3100;
   private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
   private static final MediaType MIME_JSON = MediaType.parse("application/json");
+  public GoogleMap mapToBeCleared;
   private float switchToCityPinsDelta = Float.MAX_VALUE;
   private final Set<AirMapMarker> allMarkers = new HashSet<>();
   private final Map<LatLng, AirMapCity> cities = new HashMap<>();
@@ -137,11 +145,20 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private String beURL = "";
   private String auth = "";
   private int showPathIfCloserThanSeconds;
-
+  private Location lastLocation = null;
+  private LocationCallback locationCallback;
+  private LatLngBounds lastCameraBounds;
+  private double lastLatLng;
+  private boolean locationUpdatesStartCalled;
+  private boolean locationServicesEnableInProgress;
+  private boolean userDeniedLocationServicesEnable;
+  private ActivityEventListener activityEventListener;
+  private AirMapMarker selectedMarker;
+  AirMapPaddingListener paddingListener;
   /**
    * end of urbi-specific fields
    */
-  private LocationCallback locationCallback;
+
   private LatLngBounds boundsToMove;
   private CameraUpdate cameraToSet;
   private boolean showUserLocation = false;
@@ -151,8 +168,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private boolean initialRegionSet = false;
   private boolean initialCameraSet = false;
   private LatLngBounds cameraLastIdleBounds;
-  private LatLngBounds lastCameraBounds; // urbi-specific
-  private double lastLatLng; // urbi-specific
   private int cameraMoveReason = 0;
 
   private static final String[] PERMISSIONS = new String[]{
@@ -172,10 +187,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private boolean destroyed = false;
   private final ThemedReactContext context;
   private EventDispatcher eventDispatcher;
-  // Request Code that can be Used in MainActivity in order to check if user change setting
-  public static int REQUEST_CODE_GPS_SETTINGS = 3100;
-  private AirMapMarker selectedMarker;
-  AirMapPaddingListener paddingListener;
 
   private ViewAttacherGroup attacherGroup;
 
@@ -217,6 +228,20 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
     this.manager = manager;
     this.context = reactContext;
+
+    if (activityEventListener != null) {
+      appContext.removeActivityEventListener(activityEventListener);
+    }
+
+    activityEventListener = new BaseActivityEventListener() {
+      @Override
+      public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+        onLocationServicesEnableResponse(resultCode);
+      }
+    };
+
+    appContext.addActivityEventListener(activityEventListener);
+
     initView();
 
   }
@@ -275,23 +300,35 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     attacherLayoutParams.leftMargin = 99999999;
     attacherLayoutParams.topMargin = 99999999;
     attacherGroup.setLayoutParams(attacherLayoutParams);
+
     addView(attacherGroup);
   }
 
-  public void startLocationUpdates() {
-    if (hasPermissions() && context.getCurrentActivity() != null) {
-      if (locationCallback == null)
-        locationCallback = createLocationCallBack();
-      fusedLocationClient.requestLocationUpdates(createLocationRequest(), locationCallback, Looper.getMainLooper());
+  /**
+   * Listens for responses to our requests to enable location services.
+   */
+  public void onLocationServicesEnableResponse(int resultCode) {
+    locationServicesEnableInProgress = false;
+    userDeniedLocationServicesEnable = resultCode != Activity.RESULT_OK;
+    if (!userDeniedLocationServicesEnable) {
+      // we need to start again, we just enabled the location services
+      locationUpdatesStartCalled = false;
+      startLocationUpdates();
     }
   }
 
-  public void stopLocationUpdates() {
-    if (locationCallback != null)
-      fusedLocationClient.removeLocationUpdates(locationCallback);
+  @SuppressLint("MissingPermission")
+  private void startLocationUpdates() {
+    if (!locationUpdatesStartCalled && hasPermissions() && context.getCurrentActivity() != null && !userDeniedLocationServicesEnable && !locationServicesEnableInProgress) {
+      locationUpdatesStartCalled = true;
+      if (locationCallback == null) {
+        locationCallback = createLocationCallBack();
+      }
+      fusedLocationClient.requestLocationUpdates(createLocationRequest(context.getCurrentActivity()), locationCallback, Looper.getMainLooper());
+    }
   }
 
-  private LocationRequest createLocationRequest() {
+  private LocationRequest createLocationRequest(Activity currentActivity) {
     LocationRequest locationRequest = LocationRequest.create();
     locationRequest.setInterval(100000);
     locationRequest.setFastestInterval(20000);
@@ -302,17 +339,20 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
             .addLocationRequest(locationRequest)
             .setAlwaysShow(true);
 
-    SettingsClient client = LocationServices.getSettingsClient(context.getCurrentActivity());
+    SettingsClient client = LocationServices.getSettingsClient(currentActivity);
+
     Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
 
     task.addOnSuccessListener(context.getCurrentActivity(), new OnSuccessListener<LocationSettingsResponse>() {
       @Override
       public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-        if (hasPermissions())
+        if (hasPermissions()) {
           startLocationUpdates();
+        }
 
       }
     });
+
     task.addOnFailureListener(context.getCurrentActivity(), new OnFailureListener() {
       @Override
       public void onFailure(@NonNull Exception e) {
@@ -325,7 +365,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
               // Show the dialog by calling startResolutionForResult(),
               // and check the result in onActivityResult().
               ResolvableApiException resolvable = (ResolvableApiException) e;
-              resolvable.startResolutionForResult(context.getCurrentActivity(), REQUEST_CODE_GPS_SETTINGS);
+              locationServicesEnableInProgress = true;
+              resolvable.startResolutionForResult(context.getCurrentActivity(), LOCATION_SERVICES_ENABLE_REQUEST_CODE);
             } catch (IntentSender.SendIntentException sendEx) {
               Log.e("createLocationRequest", Log.getStackTraceString(sendEx));
             }
@@ -336,11 +377,13 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
       }
     });
+
     return locationRequest;
   }
 
   private LocationCallback createLocationCallBack() {
     final AirMapView view = this;
+
     LocationCallback locationCallback = new LocationCallback() {
       @Override
       public void onLocationResult(LocationResult locationResult) {
@@ -366,6 +409,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       }
 
     };
+
     return locationCallback;
   }
 
@@ -666,6 +710,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       }
     });
 
+    // pause location updates when in BG
+    if (lifecycleListener != null) {
+      context.removeLifecycleEventListener(lifecycleListener);
+    }
+
     // We need to be sure to disable location-tracking when app enters background, in-case some
     // other module
     // has acquired a wake-lock and is controlling location-updates, otherwise, location-manager
@@ -677,7 +726,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       @SuppressLint("MissingPermission")
       @Override
       public void onHostResume() {
-        if (hasPermissions()) {
+        if (hasPermissions() && !manager.isLiteMode() && context.getCurrentActivity() != null && !userDeniedLocationServicesEnable && !locationServicesEnableInProgress) {
+          startLocationUpdates();
           map.setMyLocationEnabled(showUserLocation);
         }
         synchronized (AirMapView.this) {
@@ -693,6 +743,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       public void onHostPause() {
         if (hasPermissions()) {
           map.setMyLocationEnabled(false);
+          if (locationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+            locationUpdatesStartCalled = false;
+          }
         }
         synchronized (AirMapView.this) {
           if (!destroyed) {
@@ -867,15 +921,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   @SuppressLint("MissingPermission")
   public void centerToUserLocation() {
     if (hasPermissions()) {
-      fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-        @Override
-        public void onSuccess(Location location) {
-          if (location != null)
-            centerCameraTo(new LatLng(location.getLatitude(), location.getLongitude()), 600, 16);
-          else if (lastLocation != null)
-            centerCameraTo(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()), 600, 16);
-        }
-      });
+      if (lastLocation != null) {
+        centerCameraTo(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()), 600, 16);
+      } else if (!userDeniedLocationServicesEnable && !locationServicesEnableInProgress) {
+        startLocationUpdates();
+      }
     } else {
       manager.pushEvent(context, this, "onPermissionsNeeded", new WritableNativeMap());
     }
@@ -1760,6 +1810,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     void accept(Integer timeEstimate, Integer distanceEstimate, String polyline);
   }
 
+  @SuppressLint("MissingPermission")
   public void fetchDirectionsTo(final LatLng to, final com.airbnb.android.react.maps.AirMapView.DirectionsCallback callback) {
     if (hasPermissions()) {
       fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
