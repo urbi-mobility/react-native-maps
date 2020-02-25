@@ -465,8 +465,11 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
             "onMapLoaded", MapBuilder.of("registrationName", "onMapLoaded"),
             "onPermissionsNeeded", MapBuilder.of("registrationName", "onPermissionsNeeded")
     ));
+
     map.putAll(MapBuilder.of(
-            "onUserLocationUpdate", MapBuilder.of("registrationName", "onUserLocationUpdate")));
+            "onUserLocationUpdate", MapBuilder.of("registrationName", "onUserLocationUpdate"),
+            "onLocationServicesEnableResponse", MapBuilder.of("registrationName", "onLocationServicesEnableResponse")));
+
     return map;
   }
 

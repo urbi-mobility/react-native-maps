@@ -315,12 +315,19 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       locationUpdatesStartCalled = false;
       startLocationUpdates();
     }
+
+    WritableMap event = new WritableNativeMap();
+    event.putBoolean("allowed", !userDeniedLocationServicesEnable);
+    manager.pushEvent(context, this, "onLocationServicesEnableResponse", event);
   }
 
   @SuppressLint("MissingPermission")
   private void startLocationUpdates() {
-    if (!locationUpdatesStartCalled && hasPermissions() && context.getCurrentActivity() != null && !userDeniedLocationServicesEnable && !locationServicesEnableInProgress) {
+    if (!locationUpdatesStartCalled && hasPermissions() && context.getCurrentActivity() != null && !locationServicesEnableInProgress) {
+      userDeniedLocationServicesEnable = false; // we'll ask again right now
       locationUpdatesStartCalled = true;
+      // reset lastLocation so that when centerToCurrentPosition() is called we'll ask the user to enable the location services again
+      lastLocation = null;
       if (locationCallback == null) {
         locationCallback = createLocationCallBack();
       }
@@ -923,11 +930,13 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (hasPermissions()) {
       if (lastLocation != null) {
         centerCameraTo(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()), 600, 16);
-      } else if (!userDeniedLocationServicesEnable && !locationServicesEnableInProgress) {
+      } else if (!locationServicesEnableInProgress) {
         startLocationUpdates();
       }
     } else {
-      manager.pushEvent(context, this, "onPermissionsNeeded", new WritableNativeMap());
+      WritableMap event = new WritableNativeMap();
+      event.putString("permission", "location");
+      manager.pushEvent(context, this, "onPermissionsNeeded", event);
     }
   }
 
@@ -1921,6 +1930,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
   public Location getLastLocation() {
     return lastLocation;
+  }
+
+  public boolean hasUserDeniedLocationServicesEnable() {
+    return userDeniedLocationServicesEnable;
   }
 }
 

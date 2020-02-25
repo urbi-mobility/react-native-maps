@@ -150,6 +150,18 @@ declare module 'react-native-maps' {
     };
   }
 
+  export interface LocationServicesEnableResponse extends NativeSyntheticEvent<{}> {
+    nativeEvent: {
+      allowed: boolean;
+    };
+  }
+
+  export interface PermissionRequestedEvent extends NativeSyntheticEvent<{}> {
+    nativeEvent: {
+      permission: string;
+    };
+  }
+
   /**
    * Map style elements.
    * @see https://developers.google.com/maps/documentation/ios-sdk/styling#use_a_string_resource
@@ -255,6 +267,7 @@ declare module 'react-native-maps' {
     onLongPress?: (event: MapEvent) => void;
     onUserLocationChange?: (event: EventUserLocation) => void;
     onUserLocationUpdate?: (event: EventUserLocation) => void;
+    onLocationServicesEnableResponse?: (event: LocationServicesEnableResponse) => void;
     onPanDrag?: (event: MapEvent) => void;
     onPoiClick?: (event: MapEvent<{ placeId: string; name: string }>) => void;
     onMarkerPress?: (
@@ -273,7 +286,7 @@ declare module 'react-native-maps' {
     onMarkerDragStart?: (event: MapEvent) => void;
     onMarkerDrag?: (event: MapEvent) => void;
     onMarkerDragEnd?: (event: MapEvent) => void;
-    onPemissionsNeeded?: () => void;
+    onPermissionsNeeded?: (event: PermissionRequestedEvent) => void;
 
     minZoomLevel?: number;
     maxZoomLevel?: number;

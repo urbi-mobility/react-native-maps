@@ -44,6 +44,10 @@ public class AirMapModule extends ReactContextBaseJavaModule {
   private static final String SNAPSHOT_FORMAT_PNG = "png";
   private static final String SNAPSHOT_FORMAT_JPG = "jpg";
 
+  // urbi-specific fields
+  private static final String ERROR_LOCATION_ENABLE_DENIED = "ELOCATIONDENIED";
+  private static final String ERROR_LOCATION_UNAVAILABLE = "ELOCATIONUNAVAILABLE";
+
   public AirMapModule(ReactApplicationContext reactContext) {
     super(reactContext);
   }
@@ -198,7 +202,7 @@ public class AirMapModule extends ReactContextBaseJavaModule {
 
         Location location = view.getLastLocation();
         if (location == null) {
-          promise.reject("location is null");
+          promise.reject(view.hasUserDeniedLocationServicesEnable() ? ERROR_LOCATION_ENABLE_DENIED : ERROR_LOCATION_UNAVAILABLE, "location is null");
           return;
         }
 
