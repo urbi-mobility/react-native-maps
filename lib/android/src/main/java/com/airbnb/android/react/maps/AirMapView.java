@@ -313,7 +313,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (!userDeniedLocationServicesEnable) {
       // we need to start again, we just enabled the location services
       locationUpdatesStartCalled = false;
-      startLocationUpdates();
+      startLocationUpdates(false);
     }
 
     WritableMap event = new WritableNativeMap();
@@ -322,20 +322,19 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   }
 
   @SuppressLint("MissingPermission")
-  private void startLocationUpdates() {
+  private void startLocationUpdates(boolean forceLocationServicesDialog) {
     if (!locationUpdatesStartCalled && hasPermissions() && context.getCurrentActivity() != null && !locationServicesEnableInProgress) {
-      userDeniedLocationServicesEnable = false; // we'll ask again right now
       locationUpdatesStartCalled = true;
-      // reset lastLocation so that when centerToCurrentPosition() is called we'll ask the user to enable the location services again
+      // reset lastLocation so that when centerToUserLocation() is called we'll ask the user to enable the location services again
       lastLocation = null;
       if (locationCallback == null) {
         locationCallback = createLocationCallBack();
       }
-      fusedLocationClient.requestLocationUpdates(createLocationRequest(context.getCurrentActivity()), locationCallback, Looper.getMainLooper());
+      fusedLocationClient.requestLocationUpdates(createLocationRequest(context.getCurrentActivity(), forceLocationServicesDialog), locationCallback, Looper.getMainLooper());
     }
   }
 
-  private LocationRequest createLocationRequest(Activity currentActivity) {
+  private LocationRequest createLocationRequest(Activity currentActivity, final boolean forceDialog) {
     LocationRequest locationRequest = LocationRequest.create();
     locationRequest.setInterval(100000);
     locationRequest.setFastestInterval(20000);
@@ -354,9 +353,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       @Override
       public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
         if (hasPermissions()) {
-          startLocationUpdates();
+          locationUpdatesStartCalled = false;
+          locationServicesEnableInProgress = false;
+          map.setMyLocationEnabled(showUserLocation);
         }
-
       }
     });
 
@@ -367,17 +367,19 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         switch (statusCode) {
           case CommonStatusCodes.RESOLUTION_REQUIRED:
             // Location settings are not satisfied, but this can be fixed
-            // by showing the user a dialog.
-            try {
-              // Show the dialog by calling startResolutionForResult(),
-              // and check the result in onActivityResult().
-              ResolvableApiException resolvable = (ResolvableApiException) e;
-              locationServicesEnableInProgress = true;
-              resolvable.startResolutionForResult(context.getCurrentActivity(), LOCATION_SERVICES_ENABLE_REQUEST_CODE);
-            } catch (IntentSender.SendIntentException sendEx) {
-              Log.e("createLocationRequest", Log.getStackTraceString(sendEx));
+            // by showing the user a dialog, unless they've already said no
+            if (forceDialog || !userDeniedLocationServicesEnable) {
+              try {
+                // Show the dialog by calling startResolutionForResult(),
+                // and check the result in onActivityResult().
+                ResolvableApiException resolvable = (ResolvableApiException) e;
+                locationServicesEnableInProgress = true;
+                resolvable.startResolutionForResult(context.getCurrentActivity(), LOCATION_SERVICES_ENABLE_REQUEST_CODE);
+              } catch (IntentSender.SendIntentException sendEx) {
+                Log.e("createLocationRequest", Log.getStackTraceString(sendEx));
+              }
+              break;
             }
-            break;
           case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
             Log.e("createLocationRequest", "SETTINGS CHANGE UNAVAILABLE");
             break;
@@ -733,9 +735,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       @SuppressLint("MissingPermission")
       @Override
       public void onHostResume() {
-        if (hasPermissions() && !manager.isLiteMode() && context.getCurrentActivity() != null && !userDeniedLocationServicesEnable && !locationServicesEnableInProgress) {
-          startLocationUpdates();
-          map.setMyLocationEnabled(showUserLocation);
+        if (hasPermissions() && !manager.isLiteMode() && context.getCurrentActivity() != null && !locationServicesEnableInProgress) {
+          startLocationUpdates(false);
         }
         synchronized (AirMapView.this) {
           if (!destroyed) {
@@ -931,7 +932,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       if (lastLocation != null) {
         centerCameraTo(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()), 600, 16);
       } else if (!locationServicesEnableInProgress) {
-        startLocationUpdates();
+        // show the "enable location services" dialog if they're not enabled
+        locationUpdatesStartCalled = false;
+        // and do it regardless of whether the user recently rejected it. They pressed a center button just now!
+        startLocationUpdates(true);
       }
     } else {
       WritableMap event = new WritableNativeMap();
