@@ -419,9 +419,11 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
         view.setIndoorActiveLevelIndex(args.getInt(0));
         break;
 
-      case CENTER_TO_USER_LOCATION:
-        view.centerToUserLocation();
+      case CENTER_TO_USER_LOCATION: {
+        boolean fromButtonPress = args.getBoolean(0);
+        view.centerToUserLocation(fromButtonPress);
         break;
+      }
 
       case CENTER_TO:
         region = args.getMap(0);

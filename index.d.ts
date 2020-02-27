@@ -150,7 +150,8 @@ declare module 'react-native-maps' {
     };
   }
 
-  export interface LocationServicesEnableResponse extends NativeSyntheticEvent<{}> {
+  export interface LocationServicesEnableResponse
+    extends NativeSyntheticEvent<{}> {
     nativeEvent: {
       allowed: boolean;
     };
@@ -267,7 +268,9 @@ declare module 'react-native-maps' {
     onLongPress?: (event: MapEvent) => void;
     onUserLocationChange?: (event: EventUserLocation) => void;
     onUserLocationUpdate?: (event: EventUserLocation) => void;
-    onLocationServicesEnableResponse?: (event: LocationServicesEnableResponse) => void;
+    onLocationServicesEnableResponse?: (
+      event: LocationServicesEnableResponse
+    ) => void;
     onPanDrag?: (event: MapEvent) => void;
     onPoiClick?: (event: MapEvent<{ placeId: string; name: string }>) => void;
     onMarkerPress?: (
@@ -322,7 +325,7 @@ declare module 'react-native-maps' {
     takeSnapshot(options?: SnapshotOptions): Promise<string>;
     pointForCoordinate(coordinate: LatLng): Promise<Point>;
     coordinateForPoint(point: Point): Promise<LatLng>;
-    centerToUserLocation(): void;
+    centerToUserLocation(fromButtonPress: boolean): void;
     centerTo(coordinates: LatLng): void;
   }
 

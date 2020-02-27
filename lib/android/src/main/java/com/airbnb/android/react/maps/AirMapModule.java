@@ -83,14 +83,14 @@ public class AirMapModule extends ReactContextBaseJavaModule {
     final ReactApplicationContext context = getReactApplicationContext();
     final String format = options.hasKey("format") ? options.getString("format") : "png";
     final Bitmap.CompressFormat compressFormat =
-        format.equals(SNAPSHOT_FORMAT_PNG) ? Bitmap.CompressFormat.PNG :
-            format.equals(SNAPSHOT_FORMAT_JPG) ? Bitmap.CompressFormat.JPEG : null;
+            format.equals(SNAPSHOT_FORMAT_PNG) ? Bitmap.CompressFormat.PNG :
+                    format.equals(SNAPSHOT_FORMAT_JPG) ? Bitmap.CompressFormat.JPEG : null;
     final double quality = options.hasKey("quality") ? options.getDouble("quality") : 1.0;
     final DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
     final Integer width =
-        options.hasKey("width") ? (int) (displayMetrics.density * options.getDouble("width")) : 0;
+            options.hasKey("width") ? (int) (displayMetrics.density * options.getDouble("width")) : 0;
     final Integer height =
-        options.hasKey("height") ? (int) (displayMetrics.density * options.getDouble("height")) : 0;
+            options.hasKey("height") ? (int) (displayMetrics.density * options.getDouble("height")) : 0;
     final String result = options.hasKey("result") ? options.getString("result") : "file";
 
     // Add UI-block so we can get a valid reference to the map-view
@@ -115,7 +115,7 @@ public class AirMapModule extends ReactContextBaseJavaModule {
               return;
             }
             if ((width != 0) && (height != 0) &&
-                (width != snapshot.getWidth() || height != snapshot.getHeight())) {
+                    (width != snapshot.getWidth() || height != snapshot.getHeight())) {
               snapshot = Bitmap.createScaledBitmap(snapshot, width, height, true);
             }
 
@@ -125,7 +125,7 @@ public class AirMapModule extends ReactContextBaseJavaModule {
               FileOutputStream outputStream;
               try {
                 tempFile =
-                    File.createTempFile("AirMapSnapshot", "." + format, context.getCacheDir());
+                        File.createTempFile("AirMapSnapshot", "." + format, context.getCacheDir());
                 outputStream = new FileOutputStream(tempFile);
               } catch (Exception e) {
                 promise.reject(e);

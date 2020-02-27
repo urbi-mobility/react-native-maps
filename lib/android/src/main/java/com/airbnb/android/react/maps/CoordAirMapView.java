@@ -57,7 +57,7 @@ public class CoordAirMapView extends LinearLayout {
     floatingActionButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        airMapView.centerToUserLocation();
+        airMapView.centerToUserLocation(true);
       }
     });
   }
@@ -65,7 +65,7 @@ public class CoordAirMapView extends LinearLayout {
 
   public void manuallyLayoutChildren(View child, int y) {
     child.measure(MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY),
-        MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
+            MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
 
     child.layout(0, y, child.getMeasuredWidth(), child.getMeasuredHeight());
 

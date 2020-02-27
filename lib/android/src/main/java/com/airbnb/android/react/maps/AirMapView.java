@@ -927,15 +927,15 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   }
 
   @SuppressLint("MissingPermission")
-  public void centerToUserLocation() {
+  public void centerToUserLocation(boolean fromButtonPress) {
     if (hasPermissions()) {
       if (lastLocation != null) {
         centerCameraTo(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()), 600, 16);
       } else if (!locationServicesEnableInProgress) {
         // show the "enable location services" dialog if they're not enabled
         locationUpdatesStartCalled = false;
-        // and do it regardless of whether the user recently rejected it. They pressed a center button just now!
-        startLocationUpdates(true);
+        // and if the user pressed a button, do it regardless of whether the user recently rejected it
+        startLocationUpdates(fromButtonPress);
       }
     } else {
       WritableMap event = new WritableNativeMap();
