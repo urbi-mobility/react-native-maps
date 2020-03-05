@@ -504,6 +504,15 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
           return true;
         }
       });
+
+      map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        @Override
+        public void onMapClick(LatLng point) {
+          WritableMap event = makeClickEventData(point);
+          event.putString("action", "press");
+            manager.pushEvent(context, view, "onPress", event);
+        }
+      });
     } else {
       map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
         @Override
