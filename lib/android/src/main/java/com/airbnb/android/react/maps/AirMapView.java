@@ -456,6 +456,60 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     markerMap.put(airMapMarker.getMarker(), airMapMarker);
   }
 
+  private void onCameraBoundsUpdated(LatLngBounds bounds) {
+
+    double maxLatLng = LatLngBoundsUtils.getMaxLatLng(bounds);
+    AirMapCity newCity = getCity(bounds);
+
+    if (lastCameraBounds != null) {
+      double lastMaxLatLng = LatLngBoundsUtils.getMaxLatLng(lastCameraBounds);
+
+      if (maxLatLng > switchToCityPinsDelta && lastMaxLatLng < switchToCityPinsDelta) {
+        // switch to city markers
+        map.clear();
+        showingProviderMarkers = false;
+        cityPins.clear();
+        if (lastCity != null) {
+          lastCityWithMarkers = lastCity;
+        }
+        for (AirMapCity city : cities.values()) {
+          cityPins.put(map.addMarker(city.getMarker().getMarkerOptions()), city);
+        }
+        addAllPolygons();
+        addAllPolylines();
+      } else if (lastMaxLatLng > switchToCityPinsDelta && maxLatLng < switchToCityPinsDelta) {
+        // switch to provider markers
+        map.clear();
+        // if we're still in the same city, add back all provider markers
+        if (lastCityWithMarkers != null && lastCityWithMarkers.equals(newCity)) {
+          readdProviderMarkers();
+        } else if (newCity != null) {
+          markerMap.clear();
+          allMarkers.clear();
+        }
+      }
+    }
+
+    if (maxLatLng < switchToCityPinsDelta &&
+            (lastCity == null && newCity != null || lastCity != null && !lastCity.equals(newCity))) {
+      lastCity = newCity;
+      WritableMap map = new WritableNativeMap();
+      map.putString("city", newCity == null ? "unset" : newCity.getId());
+      manager.pushEvent(context, this, "onCityChange", map);
+      if (!showingProviderMarkers && maxLatLng < switchToCityPinsDelta && newCity != null && newCity.equals(lastCityWithMarkers)) {
+        readdProviderMarkers();
+      } else if (newCity != null) {
+        allMarkers.clear();
+      }
+    }
+
+    lastCameraBounds = bounds;
+    lastLatLng = maxLatLng;
+    cameraLastIdleBounds = bounds;
+
+    eventDispatcher.dispatchEvent(new RegionChangeEvent(getId(), bounds, false));
+  }
+
   @Override
   public void onMapReady(final GoogleMap map) {
     if (destroyed) {
@@ -658,56 +712,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
                 ((cameraLastIdleBounds == null) ||
                         LatLngBoundsUtils.BoundsAreDifferent(bounds, cameraLastIdleBounds))) {
 
-          double maxLatLng = LatLngBoundsUtils.getMaxLatLng(bounds);
-          AirMapCity newCity = getCity(bounds);
-
-          if (lastCameraBounds != null) {
-            double lastMaxLatLng = LatLngBoundsUtils.getMaxLatLng(lastCameraBounds);
-
-            if (maxLatLng > switchToCityPinsDelta && lastMaxLatLng < switchToCityPinsDelta) {
-              // switch to city markers
-              map.clear();
-              showingProviderMarkers = false;
-              cityPins.clear();
-              if (lastCity != null) {
-                lastCityWithMarkers = lastCity;
-              }
-              for (AirMapCity city : cities.values()) {
-                cityPins.put(map.addMarker(city.getMarker().getMarkerOptions()), city);
-              }
-              addAllPolygons();
-              addAllPolylines();
-            } else if (lastMaxLatLng > switchToCityPinsDelta && maxLatLng < switchToCityPinsDelta) {
-              // switch to provider markers
-              map.clear();
-              // if we're still in the same city, add back all provider markers
-              if (lastCityWithMarkers != null && lastCityWithMarkers.equals(newCity)) {
-                readdProviderMarkers();
-              } else if (newCity != null) {
-                markerMap.clear();
-                allMarkers.clear();
-              }
-            }
-          }
-
-          if (maxLatLng < switchToCityPinsDelta &&
-                  (lastCity == null && newCity != null || lastCity != null && !lastCity.equals(newCity))) {
-            lastCity = newCity;
-            WritableMap map = new WritableNativeMap();
-            map.putString("city", newCity == null ? "unset" : newCity.getId());
-            manager.pushEvent(context, view, "onCityChange", map);
-            if (!showingProviderMarkers && maxLatLng < switchToCityPinsDelta && newCity != null && newCity.equals(lastCityWithMarkers)) {
-              readdProviderMarkers();
-            } else if (newCity != null) {
-              allMarkers.clear();
-            }
-          }
-
-          lastCameraBounds = bounds;
-          lastLatLng = maxLatLng;
-          cameraLastIdleBounds = bounds;
-
-          eventDispatcher.dispatchEvent(new RegionChangeEvent(getId(), bounds, false));
+          onCameraBoundsUpdated(bounds);
         }
       }
     });
@@ -749,7 +754,18 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
         synchronized (AirMapView.this) {
           if (!destroyed) {
+            Log.i("urbi", "onResume()");
             AirMapView.this.onResume();
+            if (lastCameraBounds != null) {
+              double maxLatLng = LatLngBoundsUtils.getMaxLatLng(lastCameraBounds);
+              if (maxLatLng > switchToCityPinsDelta) {
+                for (AirMapCity city : cities.values()) {
+                  cityPins.put(map.addMarker(city.getMarker().getMarkerOptions()), city);
+                }
+              } else {
+                readdProviderMarkers();
+              }
+            }
           }
           paused = false;
         }
@@ -767,6 +783,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
         synchronized (AirMapView.this) {
           if (!destroyed) {
+            Log.i("urbi", "onPause()");
+            map.clear();
             AirMapView.this.onPause();
           }
           paused = true;
@@ -781,6 +799,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
     context.addLifecycleEventListener(lifecycleListener);
   }
+
 
   private void centerCameraTo(final LatLng position, final int delayMs, Integer newZoomLevel) {
     if (map != null) {
@@ -849,6 +868,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   onDestroy is final method so I can't override it.
    */
   public synchronized void doDestroy() {
+    Log.i("URBI", "doDestroy(), destroyed: " + destroyed);
     if (destroyed) {
       return;
     }
