@@ -783,8 +783,16 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
         synchronized (AirMapView.this) {
           if (!destroyed) {
-            Log.i("urbi", "onPause()");
+            // clear all markers off the map
             map.clear();
+            /*
+             * and detach all AirMapMarkers from the ViewGroup: only BaseSavedState.EMPTY_STATE are
+             * saved for each marker, but they still add up to more than 500kB total when committing
+             * the bundles when onSaveInstanceState() is called.
+             *
+             * We're adding all markers back anyway onHostResume()
+             */
+            attacherGroup.removeAllViews();
             AirMapView.this.onPause();
           }
           paused = true;
