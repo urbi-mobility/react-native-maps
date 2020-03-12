@@ -8,7 +8,9 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.location.Location;
@@ -62,8 +64,11 @@ import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.IndoorBuilding;
 import com.google.android.gms.maps.model.IndoorLevel;
@@ -107,6 +112,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 import static androidx.core.content.PermissionChecker.checkSelfPermission;
+import static com.airbnb.android.react.maps.LatLngBoundsUtils.toLatLonDistance;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Locale.ENGLISH;
@@ -128,6 +134,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
    * urbi-specific fields
    */
   public static final double PIN_SCALE_FACTOR = 0.8;
+  private static final int RADAR_CIRCLE_COLOR = Color.parseColor("#26EC008B");
+  private static final int RADAR_CIRCLE_CENTER_COLOR = Color.parseColor("#AAEC008B");
   /**
    * Used as requestCode when enabling location services via startActivityForResult.
    */
@@ -155,6 +163,11 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private ActivityEventListener activityEventListener;
   private AirMapMarker selectedMarker;
   AirMapPaddingListener paddingListener;
+  private Circle radarCircle;
+  private Marker radarCircleCenter;
+  private BitmapDescriptor radarCircleCenterImage;
+  private LatLng radarCenter;
+  private int radarRadius;
   /**
    * end of urbi-specific fields
    */
@@ -302,6 +315,15 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     attacherGroup.setLayoutParams(attacherLayoutParams);
 
     addView(attacherGroup);
+
+    Paint radarCenterPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    radarCenterPaint.setColor(Color.parseColor("#EC008B"));
+    float dp = getResources().getDisplayMetrics().density;
+    Bitmap img = Bitmap.createBitmap((int)(10 * dp), (int) (10 * dp), Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(img);
+    canvas.drawCircle(5 * dp, 5 * dp, 5 * dp, radarCenterPaint);
+
+    radarCircleCenterImage = BitmapDescriptorFactory.fromBitmap(img);
   }
 
   /**
@@ -477,6 +499,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
         addAllPolygons();
         addAllPolylines();
+        setRadarCircle(radarCenter, radarRadius);
       } else if (lastMaxLatLng > switchToCityPinsDelta && maxLatLng < switchToCityPinsDelta) {
         // switch to provider markers
         map.clear();
@@ -851,6 +874,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
     addAllPolygons();
     addAllPolylines();
+    setRadarCircle(radarCenter, radarRadius);
     showingProviderMarkers = true;
   }
 
@@ -866,6 +890,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     return null;
   }
 
+  @SuppressLint("WrongConstant")
   private boolean hasPermissions() {
     return checkSelfPermission(getContext(), PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED ||
             checkSelfPermission(getContext(), PERMISSIONS[1]) == PackageManager.PERMISSION_GRANTED;
@@ -983,6 +1008,29 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
   public void centerTo(LatLng coordinates) {
     centerCameraTo(coordinates, 600, 16);
+  }
+
+  public void setRadarCircle(LatLng center, int radius) {
+    if (center != null) {
+      hideRadarCircle(); // this should do nothing if all goes well, but...
+      if (map != null) {
+        radarCircle = map.addCircle(new CircleOptions().center(center).radius(radius).fillColor(RADAR_CIRCLE_COLOR).strokeWidth(0));
+        radarCircleCenter = map.addMarker(new MarkerOptions().icon(radarCircleCenterImage).anchor(0.5f, 0.5f).position(center));
+        radarCenter = center;
+        radarRadius = radius;
+      }
+    }
+  }
+
+  public void hideRadarCircle() {
+    if (radarCircle != null) {
+      radarCircle.remove();
+      radarCircleCenter.remove();
+    }
+    radarCircle = null;
+    radarCircleCenter = null;
+    radarCenter = null;
+    radarRadius = 0;
   }
 
   @SuppressLint("MissingPermission")

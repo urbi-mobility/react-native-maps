@@ -327,6 +327,8 @@ declare module 'react-native-maps' {
     coordinateForPoint(point: Point): Promise<LatLng>;
     centerToUserLocation(fromButtonPress: boolean): void;
     centerTo(coordinates: LatLng): void;
+    setRadarCircle(center: LatLng, radiusInMeters: number): void;
+    hideRadarCircle(): void;
   }
 
   export class MapViewAnimated extends MapView {}

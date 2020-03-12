@@ -3,7 +3,13 @@ package com.airbnb.android.react.maps;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.cos;
+
 public class LatLngBoundsUtils {
+  public static final int METERS_IN_LAT_DEGREE = 111_100;
+  public static final int LAT_TO_LON_FACTOR = 111320;
+
   public static boolean BoundsAreDifferent(LatLngBounds a, LatLngBounds b) {
     LatLng centerA = a.getCenter();
     double latA = centerA.latitude;
@@ -48,5 +54,23 @@ public class LatLngBoundsUtils {
   public static double getMaxLatLng(LatLngBounds bounds) {
     return Math.max(bounds.northeast.latitude - bounds.southwest.latitude,
             bounds.northeast.longitude - bounds.southwest.longitude);
+  }
+
+  /**
+   * Converts a distance in meters to a distance in latitude and longitude, with a raw
+   * approximation.
+   *
+   * @param latitude         the latitude of the origin point
+   * @param distanceInMeters the distance in meters
+   * @return the distance as a latitude, longitude pair
+   */
+  public static LatLng toLatLonDistance(double latitude, double distanceInMeters) {
+
+    double deltaLat = distanceInMeters / METERS_IN_LAT_DEGREE;
+
+    double metersInLongitudeDegree = LAT_TO_LON_FACTOR * cos(latitude / 180.0 * PI);
+    double deltaLon = distanceInMeters / metersInLongitudeDegree;
+
+    return new LatLng(deltaLat, deltaLon);
   }
 }

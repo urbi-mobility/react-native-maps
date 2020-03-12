@@ -40,6 +40,8 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   // urbi-specific
   private static final int CENTER_TO_USER_LOCATION = 666;
   private static final int CENTER_TO = 667;
+  private static final int SET_RADAR_CIRCLE = 668;
+  private static final int HIDE_RADAR_CIRCLE = 669;
 
   private final Map<String, Integer> MAP_TYPES = MapBuilder.of(
           "standard", GoogleMap.MAP_TYPE_NORMAL,
@@ -419,11 +421,10 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
         view.setIndoorActiveLevelIndex(args.getInt(0));
         break;
 
-      case CENTER_TO_USER_LOCATION: {
+      case CENTER_TO_USER_LOCATION:
         boolean fromButtonPress = args.getBoolean(0);
         view.centerToUserLocation(fromButtonPress);
         break;
-      }
 
       case CENTER_TO:
         region = args.getMap(0);
@@ -432,6 +433,16 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
         view.centerTo(new LatLng(lat, lng));
         break;
 
+      case SET_RADAR_CIRCLE:
+        region = args.getMap(0);
+        lat = region.getDouble("latitude");
+        lng = region.getDouble("longitude");
+        view.setRadarCircle(new LatLng(lat, lng), args.getInt(1));
+        break;
+
+      case HIDE_RADAR_CIRCLE:
+        view.hideRadarCircle();
+        break;
     }
   }
 
@@ -495,7 +506,9 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
             "setMapBoundaries", SET_MAP_BOUNDARIES,
             "setIndoorActiveLevelIndex", SET_INDOOR_ACTIVE_LEVEL_INDEX,
             "centerToUserLocation", CENTER_TO_USER_LOCATION,
-            "centerTo", CENTER_TO
+            "centerTo", CENTER_TO,
+            "setRadarCircle", SET_RADAR_CIRCLE,
+            "hideRadarCircle", HIDE_RADAR_CIRCLE
     ));
 
     return map;
