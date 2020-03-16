@@ -788,6 +788,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
               } else {
                 readdProviderMarkers();
               }
+              addAllPolygons();
+              addAllPolylines();
+              setRadarCircle(radarCenter, radarRadius);
             }
           }
           paused = false;
@@ -815,7 +818,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
              *
              * We're adding all markers back anyway onHostResume()
              */
-            attacherGroup.removeAllViews();
+            if (attacherGroup != null) {
+              attacherGroup.removeAllViews();
+            }
             AirMapView.this.onPause();
           }
           paused = true;
