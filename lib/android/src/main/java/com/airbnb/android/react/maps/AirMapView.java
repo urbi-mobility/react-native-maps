@@ -191,6 +191,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private final Map<Polyline, AirMapPolyline> polylineMap = new HashMap<>();
   private final Map<Polygon, AirMapPolygon> polygonMap = new HashMap<>();
   private final Map<GroundOverlay, AirMapOverlay> overlayMap = new HashMap<>();
+  private final Map<Circle, AirMapCircle> circleMap = new HashMap<>();
   private final Map<TileOverlay, AirMapHeatmap> heatmapMap = new HashMap<>();
   private final Map<TileOverlay, AirMapGradientPolyline> gradientPolylineMap = new HashMap<>();
   private GestureDetectorCompat gestureDetector;
@@ -499,6 +500,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
         addAllPolygons();
         addAllPolylines();
+        addAllCircles();
         setRadarCircle(radarCenter, radarRadius);
       } else if (lastMaxLatLng > switchToCityPinsDelta && maxLatLng < switchToCityPinsDelta) {
         // switch to provider markers
@@ -790,6 +792,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
               }
               addAllPolygons();
               addAllPolylines();
+              addAllCircles();
               setRadarCircle(radarCenter, radarRadius);
             }
           }
@@ -869,6 +872,16 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     polylineMap.putAll(newMap);
   }
 
+  private void addAllCircles() {
+    Map<Circle, AirMapCircle> newMap = new HashMap<>();
+    for (AirMapCircle circle : circleMap.values()) {
+      circle.addToMap(map, this);
+      newMap.put((Circle)(circle.getFeature()), circle);
+    }
+    circleMap.clear();
+    circleMap.putAll(newMap);
+  }
+
   private void readdProviderMarkers() {
     markerMap.clear();
     for (AirMapMarker m : allMarkers) {
@@ -879,6 +892,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     }
     addAllPolygons();
     addAllPolylines();
+    addAllCircles();
     setRadarCircle(radarCenter, radarRadius);
     showingProviderMarkers = true;
   }
@@ -1145,6 +1159,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       AirMapCircle circleView = (AirMapCircle) child;
       circleView.addToMap(map, this);
       features.add(index, circleView);
+      Circle circle = (Circle) circleView.getFeature();
+      circleMap.put(circle, circleView);
     } else if (child instanceof AirMapUrlTile) {
       AirMapUrlTile urlTileView = (AirMapUrlTile) child;
       urlTileView.addToMap(map, this);
@@ -1244,6 +1260,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       heatmapMap.remove(feature.getFeature());
     } else if (feature instanceof AirMapPolygon) {
       polygonMap.remove(feature.getFeature());
+    } else if (feature instanceof AirMapCircle) {
+      circleMap.remove(feature.getFeature());
     }
     feature.removeFromMap(map);
   }
