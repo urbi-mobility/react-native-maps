@@ -781,20 +781,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
           if (!destroyed) {
             Log.i("urbi", "onResume()");
             AirMapView.this.onResume();
-            if (lastCameraBounds != null) {
-              double maxLatLng = LatLngBoundsUtils.getMaxLatLng(lastCameraBounds);
-              if (maxLatLng > switchToCityPinsDelta) {
-                for (AirMapCity city : cities.values()) {
-                  cityPins.put(map.addMarker(city.getMarker().getMarkerOptions()), city);
-                }
-              } else {
-                readdProviderMarkers();
-              }
-              addAllPolygons();
-              addAllPolylines();
-              addAllCircles();
-              setRadarCircle(radarCenter, radarRadius);
-            }
           }
           paused = false;
         }
@@ -812,10 +798,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
         synchronized (AirMapView.this) {
           if (!destroyed) {
-            // clear all markers off the map
-            map.clear();
             /*
-             * and detach all AirMapMarkers from the ViewGroup: only BaseSavedState.EMPTY_STATE are
+             * detach all AirMapMarkers from the ViewGroup: only BaseSavedState.EMPTY_STATE are
              * saved for each marker, but they still add up to more than 500kB total when committing
              * the bundles when onSaveInstanceState() is called.
              *
