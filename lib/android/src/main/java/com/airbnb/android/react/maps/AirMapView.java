@@ -317,14 +317,25 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
 
     addView(attacherGroup);
 
-    Paint radarCenterPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    radarCenterPaint.setColor(Color.parseColor("#EC008B"));
-    float dp = getResources().getDisplayMetrics().density;
-    Bitmap img = Bitmap.createBitmap((int)(10 * dp), (int) (10 * dp), Bitmap.Config.ARGB_8888);
-    Canvas canvas = new Canvas(img);
-    canvas.drawCircle(5 * dp, 5 * dp, 5 * dp, radarCenterPaint);
+  }
 
-    radarCircleCenterImage = BitmapDescriptorFactory.fromBitmap(img);
+  private BitmapDescriptor getRadarCircleCenterImage() {
+    if (radarCircleCenterImage == null) {
+      try {
+        Paint radarCenterPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        radarCenterPaint.setColor(Color.parseColor("#EC008B"));
+        float dp = getResources().getDisplayMetrics().density;
+        Bitmap img = Bitmap.createBitmap((int) (10 * dp), (int) (10 * dp), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(img);
+        canvas.drawCircle(5 * dp, 5 * dp, 5 * dp, radarCenterPaint);
+
+        radarCircleCenterImage = BitmapDescriptorFactory.fromBitmap(img);
+      } catch (Exception e) {
+        Log.e("urbi", "couldn't initialize radar circle center image");
+      }
+    }
+
+    return radarCircleCenterImage;
   }
 
   /**
@@ -1018,7 +1029,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       hideRadarCircle(); // this should do nothing if all goes well, but...
       if (map != null) {
         radarCircle = map.addCircle(new CircleOptions().center(center).radius(radius).fillColor(RADAR_CIRCLE_COLOR).strokeWidth(0));
-        radarCircleCenter = map.addMarker(new MarkerOptions().icon(radarCircleCenterImage).anchor(0.5f, 0.5f).position(center));
+        BitmapDescriptor radarCircleCenterImage = getRadarCircleCenterImage();
+        if (radarCircleCenterImage != null) {
+          radarCircleCenter = map.addMarker(new MarkerOptions().icon(radarCircleCenterImage).anchor(0.5f, 0.5f).position(center));
+        }
         radarCenter = center;
         radarRadius = radius;
       }
