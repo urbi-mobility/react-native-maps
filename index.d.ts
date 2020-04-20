@@ -236,6 +236,7 @@ declare module 'react-native-maps' {
     toolbarEnabled?: boolean;
     moveOnMarkerPress?: boolean;
     cityPins?: CityPin[];
+    imageIds?: { [id: string]: string };
     switchToCityPinsDelta?: number;
     backendURL?: string;
     backendToken?: string;
@@ -397,6 +398,17 @@ declare module 'react-native-maps' {
   }
 
   export class MarkerAnimated extends Marker {}
+
+  // =======================================================================
+  // UrbiPin
+  // =======================================================================
+  export interface UrbiPinProps extends ViewProperties {
+    img: string;
+    c: [number, number];
+    onPress?: (event: MapEvent<{ action: 'marker-press'; id: string }>) => void;
+    off?: boolean;
+    selected?: boolean;
+  }
 
   // =======================================================================
   //  Callout

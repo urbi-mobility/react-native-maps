@@ -1133,7 +1133,9 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   public void addFeature(View child, int index) {
     // Our desired API is to pass up annotations/overlays as children to the mapview component.
     // This is where we intercept them and do the appropriate underlying mapview action.
-    if (child instanceof AirMapMarker) {
+    if (child instanceof AirMapUrbiMarker) {
+      addMarker((AirMapUrbiMarker) child, index);
+    } else if (child instanceof AirMapMarker) {
       addMarker((AirMapMarker) child, index);
     } else if (child instanceof AirMapPolyline) {
       AirMapPolyline polylineView = (AirMapPolyline) child;
@@ -1691,6 +1693,10 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         }
       }
     }
+  }
+
+  public void setImageIds(ReadableMap imageIds) {
+    this.manager.getUrbiMarkerManager().setImageIds(imageIds.toHashMap());
   }
 
   public void onDoublePress(MotionEvent ev) {

@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Image,
   PermissionsAndroid,
+  Platform,
   StyleSheet,
   Text,
   ToastAndroid,
@@ -9,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import MapView, { Marker, ProviderPropType, Polygon } from 'react-native-maps';
+import MapView, { Marker, Polygon, ProviderPropType, UrbiPin } from 'react-native-maps';
 import berlinVehicleList from './assets/four-vehicles.json';
 import hamburgVehicleList from './assets/vehicles-hamburg.json';
 import cityList from './assets/cities.json';
@@ -40,8 +41,13 @@ const offsets = {
   EXPAND: 200,
 };
 
+const imageIds = Object.keys(pins).reduce((prev, k) => {
+  prev[k.substring(7)] = Image.resolveAssetSource(pins[k]).uri;
+  return prev;
+}, {});
+
 class Urbi extends React.Component {
-  generateMarker = v => (
+  generateMarker = v => Platform.OS === 'ios' ? (
     <Marker
       key={v.id}
       centerOffset={{ x: 0, y: -19.5 }}
@@ -49,6 +55,16 @@ class Urbi extends React.Component {
       image={pins[`ic_pin_${v.provider}${v.booked ? '_highlighted' : ''}`]}
       onPress={this.onMarkerPress(`${v.provider} - ${v.id}`)}
       tracksViewChanges={false}
+      off={v.off}
+      selected={v.selected}
+    />
+  ) : (
+    <UrbiPin
+      key={v.id}
+      uId={`${v.provider}::${v.id}`}
+      c={[v.location.lat, v.location.lon]}
+      img={`${v.provider}${v.booked ? '_highlighted' : ''}`}
+      onPress={this.onMarkerPress(`${v.provider} - ${v.id}`)}
       off={v.off}
       selected={v.selected}
     />
@@ -71,6 +87,7 @@ class Urbi extends React.Component {
       bottomOffset: offsets.ANCHOR,
       hideArea: false,
     };
+
     this.coordinator = React.createRef();
     this.map = React.createRef();
 
@@ -86,7 +103,6 @@ class Urbi extends React.Component {
     this.onTest = this.onTest.bind(this);
     this.renderPolygons = this.renderPolygons.bind(this);
     this.onToggleHighlight = this.onToggleHighlight.bind(this);
-    this.onUserLocationUpdate = this.onUserLocationUpdate.bind(this)
   }
 
   UNSAFE_componentWillMount() {
@@ -95,7 +111,7 @@ class Urbi extends React.Component {
     ).then(granted => {
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         this.onMapReady();
-        if(this.map.current){
+        if (this.map.current) {
           this.map.current.startLocationUpdates();
         }
       }
@@ -176,14 +192,9 @@ class Urbi extends React.Component {
     }
   }
 
-  onUserLocationUpdate(e) {
-    const coordinate = e.nativeEvent.coordinate
-    ToastAndroid.show(`onUserLocationUpdate ${JSON.stringify(coordinate)}`, ToastAndroid.SHORT);
-  }
-
   onCenterPress() {
     this.map.current.getLastLocation().then(l => {
-      ToastAndroid.show(`last location ${JSON.stringify(l)}`);
+      ToastAndroid.show(`last location ${JSON.stringify(l)}`, ToastAndroid.SHORT);
     }).catch(error => console.log(error) );
     this.map.current.centerToUserLocation();
   }
@@ -247,9 +258,9 @@ class Urbi extends React.Component {
           switchToCityPinsDelta={SWITCH_TO_PINS_LAT_LON_DELTA}
           showsMyLocationButton={false}
           cityPins={cityPins}
+          imageIds={imageIds}
           onCityPress={this.onCityPress}
           onCityChange={this.onCityChange}
-          onUserLocationUpdate={this.onUserLocationUpdate}
           mapPadding={{
             top: 0,
             right: 0,
@@ -284,8 +295,8 @@ class Urbi extends React.Component {
               <Text style={styles.buttonLabel}>toggle booked</Text>
             </TouchableHighlight>
             <TouchableHighlight
-                style={styles.button}
-                onPress={this.onCenterPress}
+              style={styles.button}
+              onPress={this.onCenterPress}
             >
               <Text style={styles.buttonLabel}>center</Text>
             </TouchableHighlight>

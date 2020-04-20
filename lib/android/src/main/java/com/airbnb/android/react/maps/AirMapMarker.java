@@ -202,7 +202,11 @@ public class AirMapMarker extends AirMapFeature {
   }
 
   public void setCoordinate(ReadableMap coordinate) {
-    position = new LatLng(coordinate.getDouble("latitude"), coordinate.getDouble("longitude"));
+    setCoordinate(new LatLng(coordinate.getDouble("latitude"), coordinate.getDouble("longitude")));
+  }
+
+  public void setCoordinate(LatLng coordinate) {
+    position = coordinate;
     if (marker != null) {
       marker.setPosition(position);
     }
