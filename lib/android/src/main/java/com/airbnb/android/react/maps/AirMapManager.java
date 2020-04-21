@@ -53,6 +53,7 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
 
   private final ReactApplicationContext appContext;
   private AirMapMarkerManager markerManager;
+  private AirMapUrbiMarkerManager urbiMarkerManager;
 
   protected GoogleMapOptions googleMapOptions;
   protected boolean liteMode;
@@ -73,8 +74,16 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     return this.markerManager;
   }
 
+  public AirMapUrbiMarkerManager getUrbiMarkerManager() {
+    return this.urbiMarkerManager;
+  }
+
   public void setMarkerManager(AirMapMarkerManager markerManager) {
     this.markerManager = markerManager;
+  }
+
+  public void setUrbiMarkerManager(AirMapUrbiMarkerManager urbiMarkerManager) {
+    this.urbiMarkerManager = urbiMarkerManager;
   }
 
   public boolean isLiteMode() {
@@ -297,6 +306,11 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
   @ReactProp(name = "cityPins")
   public void setCityPins(AirMapView view, @Nullable ReadableArray cityPins) {
     view.setCityPins(cityPins);
+  }
+
+  @ReactProp(name = "imageIds")
+  public void setImageIds(AirMapView view, @Nullable ReadableMap imageIds) {
+    view.setImageIds(imageIds);
   }
 
   @ReactProp(name = "backendURL")

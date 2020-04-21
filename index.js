@@ -4,6 +4,7 @@ import MapView, {
   ProviderPropType,
 } from './lib/components/MapView';
 import Marker from './lib/components/MapMarker.js';
+import UrbiPin from './lib/components/UrbiPin.js'
 import Overlay from './lib/components/MapOverlay.js';
 import { BOTTOM_SHEET_TYPES } from './lib/components/CoordinatorView';
 
@@ -23,7 +24,7 @@ export { default as CoordinatorView } from './lib/components/CoordinatorView';
 
 export { default as Geojson } from './lib/components/Geojson.js';
 
-export { Marker, Overlay };
+export { Marker, Overlay, UrbiPin };
 export { Animated, MAP_TYPES, ProviderPropType };
 
 export const PROVIDER_GOOGLE = MapView.PROVIDER_GOOGLE;

@@ -32,6 +32,7 @@ public class MapsPackage implements ReactPackage {
   public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
     AirMapCalloutManager calloutManager = new AirMapCalloutManager();
     AirMapMarkerManager annotationManager = new AirMapMarkerManager();
+    AirMapUrbiMarkerManager urbiAnnotationManager = new AirMapUrbiMarkerManager();
     AirMapPolylineManager polylineManager = new AirMapPolylineManager(reactContext);
     AirMapGradientPolylineManager gradientPolylineManager = new AirMapGradientPolylineManager(reactContext);
     AirMapPolygonManager polygonManager = new AirMapPolygonManager(reactContext);
@@ -45,10 +46,12 @@ public class MapsPackage implements ReactPackage {
     AirMapOverlayManager overlayManager = new AirMapOverlayManager(reactContext);
     AirMapHeatmapManager heatmapManager = new AirMapHeatmapManager();
     mapManager.setMarkerManager(annotationManager);
+    mapManager.setUrbiMarkerManager(urbiAnnotationManager);
 
     return Arrays.<ViewManager>asList(
         calloutManager,
         annotationManager,
+        urbiAnnotationManager,
         polylineManager,
         gradientPolylineManager,
         polygonManager,
