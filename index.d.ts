@@ -403,12 +403,15 @@ declare module 'react-native-maps' {
   // UrbiPin
   // =======================================================================
   export interface UrbiPinProps extends ViewProperties {
+    uId: string;
     img: string;
     c: [number, number];
     onPress?: (event: MapEvent<{ action: 'marker-press'; id: string }>) => void;
     off?: boolean;
     selected?: boolean;
   }
+
+  export class UrbiPin extends React.Component<UrbiPinPros, any> {}
 
   // =======================================================================
   //  Callout
