@@ -389,7 +389,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
         if (hasPermissions()) {
           locationUpdatesStartCalled = false;
           locationServicesEnableInProgress = false;
-          map.setMyLocationEnabled(showUserLocation);
+          if(map != null)
+            map.setMyLocationEnabled(showUserLocation);
         }
       }
     });
@@ -800,8 +801,8 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       @SuppressLint("MissingPermission")
       @Override
       public void onHostPause() {
-        if (hasPermissions()) {
-          map.setMyLocationEnabled(false);
+        if (hasPermissions() && map != null) {
+            map.setMyLocationEnabled(false);
           if (locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
             locationUpdatesStartCalled = false;
@@ -1053,7 +1054,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   @SuppressLint("MissingPermission")
   public void setShowsUserLocation(boolean showUserLocation) {
     this.showUserLocation = showUserLocation; // hold onto this for lifecycle handling
-    if (hasPermissions()) {
+    if (hasPermissions() && map != null) {
       map.setMyLocationEnabled(showUserLocation);
     }
   }
