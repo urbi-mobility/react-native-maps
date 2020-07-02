@@ -6,7 +6,6 @@ import MapView, {
 import Marker from './lib/components/MapMarker.js';
 import UrbiPin from './lib/components/UrbiPin.js'
 import Overlay from './lib/components/MapOverlay.js';
-import { BOTTOM_SHEET_TYPES } from './lib/components/CoordinatorView';
 
 export { default as Polyline } from './lib/components/MapPolyline.js';
 export { default as Heatmap } from './lib/components/MapHeatmap.js';
@@ -20,7 +19,6 @@ export {
   default as CalloutSubview,
 } from './lib/components/MapCalloutSubview.js';
 export { default as AnimatedRegion } from './lib/components/AnimatedRegion.js';
-export { default as CoordinatorView } from './lib/components/CoordinatorView';
 
 export { default as Geojson } from './lib/components/Geojson.js';
 
@@ -32,6 +30,5 @@ export const PROVIDER_DEFAULT = MapView.PROVIDER_DEFAULT;
 
 export const MarkerAnimated = Marker.Animated;
 export const OverlayAnimated = Overlay.Animated;
-export { BOTTOM_SHEET_TYPES };
 
 export default MapView;
