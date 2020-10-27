@@ -46,6 +46,12 @@ public class AirMapUrbiMarkerManager extends AirMapMarkerManager {
 
   @ReactProp(name = "c")
   public void setCoordinates(AirMapUrbiMarker view, ReadableArray coords) {
-    view.setCoordinate(new LatLng(coords.getDouble(0), coords.getDouble(1)));
+    if (coords != null) {
+      try {
+        view.setCoordinate(new LatLng(coords.getDouble(0), coords.getDouble(1)));
+      } catch (NullPointerException e) {
+        // something went wrong while converting the array from the JS side to native, don't crash!
+      }
+    }
   }
 }
