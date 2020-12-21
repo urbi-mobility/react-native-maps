@@ -2,6 +2,28 @@
 
 React Native Map components for iOS + Android
 
+## What's in this fork
+
+All changes are in the `urbi` branch.
+
+The changes we made apply almost exclusively to the Android build, as that's the one that showed performance problems when adding many (10k+) markers to the map.
+
+To see all changes we made, visit https://github.com/react-native-maps/react-native-maps/compare/master...urbi-mobility:urbi by selecting our fork on the right as `head repository`, and `urbi` as `compare` branch.
+
+### Changes
+
+In short, we:
+
+- bumped some dependencies (`androidx.appcompat`) and constraints (`supportLibVersion`, `playServicesVersion`)
+- added an optimization to quickly remove all markers from the map once the zoom level reaches a certain threshold: this is used to fluidly move from a version of the map where all vehicle markers are shown to one in which only a few city markers are shown. See `cityPins`, `switchToCityPinsDelta`, and `onCityChange` props on `index.d.ts`, `onCameraBoundsUpdated()` on `AirMapView`
+- manage location requests on the native side, including asking for permissions and centering the map to the user's current location on demand (without having to go through the bridge twice, to first retrieve the user's current location, and then center the map on it). See `startLocationUpdates()`, `centerToUserLocation()` on `AirMapView`
+- reduce all marker image sizes to 80% of their original size, and show the one selected at 100%. See `scaleDown()` and `setOriginalSize()` on `AirMapView`, and find your way from there
+- fix a major source of `OutOfMemory` crashes by detaching all `AirMapMarker`s from the `ViewGroup` when the app is being put on background. See `onHostPause()` on `AirMapView`
+- manage a circle whose radius is updated via UI, which we use for the radar feature. See `setRadarCircle()` on `AirMapView`
+- added an optimization to reduce the size of JSON messages being sent across the bridge to update the map. We do this by both having our own `UrbiMapMarker` (whose field names were shortened), and by replacing URLs to images with numeric IDs generated at load time. See `setImageIds()` on `AirMapView`, and find your way from there
+- added a label on top of selected markers fetching the time and distance required to reach it from the user's current location. See `fetchDirectionsTo()` on `AirMapView`
+- replaced the test app with our own playground, which directly shows a Map without having to navigate through the menus.
+
 ## Installation
 
 See [Installation Instructions](docs/installation.md).
